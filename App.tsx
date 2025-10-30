@@ -1,0 +1,546 @@
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { AddParticipantForm } from './components/AddParticipantForm';
+import { InitiativeList } from './components/InitiativeList';
+import { CombatControls } from './components/CombatControls';
+import { SaveLoadControls } from './components/SaveLoadControls';
+import { StatblockModal } from './components/StatblockModal';
+import { RerollInitiativeModal } from './components/RerollInitiativeModal';
+import { AddCreaturesModal } from './components/AddCreaturesModal';
+import { LootModal } from './components/LootModal';
+import { EncounterDifficulty } from './components/EncounterDifficulty';
+import { TieBreakerModal } from './components/TieBreakerModal';
+import { CombatLog } from './components/CombatLog';
+import type { Participant, Condition, LogEntry } from './types';
+import { D20Icon } from './components/icons';
+
+interface SavedState {
+  participants: Participant[];
+  currentIndex: number;
+  round: number;
+  combatLog: LogEntry[];
+}
+
+const App: React.FC = () => {
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [round, setRound] = useState<number>(0);
+  const [combatLog, setCombatLog] = useState<LogEntry[]>([]);
+  const [viewingUrlDetails, setViewingUrlDetails] = useState<{ url: string; title: string } | null>(null);
+  const [loadedStateForReroll, setLoadedStateForReroll] = useState<SavedState | null>(null);
+  const [creaturesToAdd, setCreaturesToAdd] = useState<Participant[] | null>(null);
+  const [participantToFind, setParticipantToFind] = useState<string | null>(null);
+  const [lootingParticipant, setLootingParticipant] = useState<Participant | null>(null);
+  const [ties, setTies] = useState<Participant[][] | null>(null);
+
+
+  const sortedParticipants = useMemo(() => {
+    return [...participants].sort((a, b) => {
+      if (b.initiative !== a.initiative) {
+        return b.initiative - a.initiative;
+      }
+      const dexA = a.dexterityModifier ?? -Infinity;
+      const dexB = b.dexterityModifier ?? -Infinity;
+      if (dexB !== dexA) {
+        return dexB - dexA;
+      }
+      return a.name.localeCompare(b.name); // Fallback to name sort
+    });
+  }, [participants]);
+
+  const addLogEntry = useCallback((message: string, type: LogEntry['type'], actorNameOverride?: string) => {
+    const actor = sortedParticipants[currentIndex];
+    const newEntry: LogEntry = {
+        id: `${Date.now()}-${Math.random()}`,
+        round: round > 0 ? round : 0,
+        actorName: actorNameOverride || actor?.name || 'System',
+        message,
+        type,
+    };
+    setCombatLog(prev => [...prev, newEntry]);
+  }, [currentIndex, round, sortedParticipants]);
+
+  // Effect to reset legendary actions at the start of a participant's turn
+  useEffect(() => {
+    if (currentIndex > -1 && sortedParticipants.length > 0) {
+      const currentParticipant = sortedParticipants[currentIndex];
+      if (
+        currentParticipant &&
+        typeof currentParticipant.legendaryActions === 'number' &&
+        currentParticipant.legendaryActionsUsed !== 0
+      ) {
+        // It's this participant's turn, reset their actions
+        setParticipants(prev =>
+          prev.map(p =>
+            p.id === currentParticipant.id ? { ...p, legendaryActionsUsed: 0 } : p
+          )
+        );
+      }
+    }
+  }, [currentIndex, sortedParticipants]);
+
+  // Effect to correctly set the current index after adding new creatures to an ongoing combat
+  useEffect(() => {
+    if (participantToFind && sortedParticipants.length > 0) {
+        const newIndex = sortedParticipants.findIndex(p => p.id === participantToFind);
+        if (newIndex > -1) {
+            setCurrentIndex(newIndex);
+        }
+        setParticipantToFind(null); // Reset after use
+    }
+  }, [sortedParticipants, participantToFind]);
+
+  const findTies = useCallback((participantsList: Participant[]): Participant[][] => {
+    const initiatives = new Map<number, Participant[]>();
+    participantsList.forEach(p => {
+        if (!initiatives.has(p.initiative)) {
+            initiatives.set(p.initiative, []);
+        }
+        initiatives.get(p.initiative)!.push(p);
+    });
+
+    const tiesFound: Participant[][] = [];
+    initiatives.forEach(group => {
+        if (group.length > 1) {
+            const needsResolution = group.some(p => typeof p.dexterityModifier !== 'number');
+            if (needsResolution) {
+                tiesFound.push(group);
+            }
+        }
+    });
+    return tiesFound;
+  }, []);
+
+  const handleAddParticipant = (participant: Omit<Participant, 'id'>) => {
+    const newParticipant = { ...participant, id: Date.now().toString() };
+    const newParticipants = [...participants, newParticipant];
+    
+    if (currentIndex > -1) { // If combat is active, check for ties immediately
+      const tiesToResolve = findTies(newParticipants);
+      if (tiesToResolve.length > 0) {
+        setParticipants(newParticipants); // Add participant to state first
+        setTies(tiesToResolve); // Then open modal
+        return;
+      }
+    }
+    setParticipants(newParticipants);
+  };
+
+  const handleRemoveParticipant = (id: string) => {
+    const participantToRemove = participants.find(p => p.id === id);
+    if (participantToRemove) {
+      addLogEntry(`${participantToRemove.name} was removed from combat.`, 'info');
+    }
+
+    if (lootingParticipant?.id === id) {
+      setLootingParticipant(null);
+    }
+
+    const removedIndex = sortedParticipants.findIndex(p => p.id === id);
+    const newParticipants = participants.filter(p => p.id !== id);
+    setParticipants(newParticipants);
+
+    if (newParticipants.length === 0) {
+      setCurrentIndex(-1);
+      setRound(0);
+      return;
+    }
+
+    if (currentIndex > -1) {
+      if (removedIndex < currentIndex) {
+        setCurrentIndex(prev => prev - 1);
+      } else if (removedIndex === currentIndex) {
+         if (currentIndex >= newParticipants.length) {
+            setCurrentIndex(0);
+            setRound(prev => prev + 1);
+         }
+      }
+    }
+  };
+
+  const handleUpdateHp = (id: string, newHp: number) => {
+    const participant = participants.find(p => p.id === id);
+    if (participant && typeof participant.hp === 'number') {
+        const oldHp = participant.hp;
+        const clampedHp = Math.max(0, newHp);
+        if (clampedHp < oldHp) {
+            addLogEntry(`${participant.name} takes ${oldHp - clampedHp} damage.`, 'damage');
+        } else if (clampedHp > oldHp) {
+            addLogEntry(`${participant.name} heals for ${clampedHp - oldHp} hit points.`, 'healing');
+        }
+        if (clampedHp <= 0 && oldHp > 0) {
+            addLogEntry(`${participant.name} has been defeated!`, 'death');
+        }
+    }
+
+    setParticipants(prev =>
+      prev.map(p => (p.id === id ? { ...p, hp: Math.max(0, newHp) } : p))
+    );
+  };
+  
+  const handleUpdateParticipant = useCallback((id: string, updates: Partial<Participant>) => {
+    if (currentIndex > -1 && updates.initiative !== undefined && sortedParticipants[currentIndex]) {
+      // If initiative is changed mid-combat, we need to find the new index of the current turn's participant after sorting.
+      setParticipantToFind(sortedParticipants[currentIndex].id);
+    }
+    setParticipants(prev =>
+      prev.map(p => (p.id === id ? { ...p, ...updates } : p))
+    );
+  }, [currentIndex, sortedParticipants]);
+
+  const handleStart = () => {
+    if (participants.length > 0) {
+      const tiesToResolve = findTies(participants);
+      if (tiesToResolve.length > 0) {
+        setTies(tiesToResolve);
+        return;
+      }
+      setCombatLog([]); // Clear log for new combat
+      const firstParticipant = sortedParticipants[0];
+      setRound(1);
+      setCurrentIndex(0);
+      
+      const newLog: LogEntry[] = [
+        { id: `${Date.now()}-start`, round: 1, actorName: 'System', message: 'Combat has started! Round 1 begins.', type: 'info' },
+        { id: `${Date.now()}-turn`, round: 1, actorName: firstParticipant.name, message: `It is now ${firstParticipant.name}'s turn.`, type: 'turn_start' }
+      ];
+      setCombatLog(newLog);
+    }
+  };
+
+  const handleNext = () => {
+    if (sortedParticipants.length > 0) {
+      let currentRound = round;
+      const nextIndex = (currentIndex + 1) % sortedParticipants.length;
+      
+      if (nextIndex === 0) {
+        currentRound = round + 1;
+        setRound(currentRound);
+        addLogEntry(`Round ${currentRound} begins.`, 'info');
+        // New round begins, update condition durations
+        setParticipants(prev => prev.map(p => ({
+            ...p,
+            conditions: p.conditions
+                .map(c => ({ ...c, duration: c.duration !== Infinity ? c.duration - 1 : Infinity }))
+                .filter(c => c.duration > 0 || c.duration === Infinity)
+        })));
+      }
+
+      const nextParticipant = sortedParticipants[nextIndex];
+      addLogEntry(`It is now ${nextParticipant.name}'s turn.`, 'turn_start', nextParticipant.name);
+      setCurrentIndex(nextIndex);
+    }
+  };
+
+  const handlePrev = () => {
+     if (sortedParticipants.length > 0) {
+      const prevIndex = (currentIndex - 1 + sortedParticipants.length) % sortedParticipants.length;
+       if (currentIndex === 0) {
+         setRound(prev => Math.max(1, prev - 1));
+       }
+      setCurrentIndex(prevIndex);
+    }
+  };
+
+  const handleEndCombat = () => {
+    addLogEntry('Combat has ended.', 'info');
+    setCurrentIndex(-1);
+    setRound(0);
+    setParticipants(prev =>
+      prev.filter(p => {
+        if (p.type === 'player') return true; // Always keep players
+        
+        const isDefeated = typeof p.hp === 'number' && p.hp <= 0;
+        if (!isDefeated) return true; // Keep anyone not defeated
+
+        // At this point, it's a defeated non-player. Keep only if they have loot.
+        const hasLoot = p.inventory && p.inventory.length > 0;
+        return hasLoot;
+      })
+    );
+  };
+
+  const handleResetCombat = () => {
+    if (confirm("Are you sure you want to reset all combatants to full health, remove all conditions, and reset resources? This cannot be undone.")) {
+        setParticipants(prev => prev.map(p => ({
+            ...p,
+            hp: p.maxHp,
+            conditions: [],
+            legendaryResistancesUsed: 0,
+            legendaryActionsUsed: 0,
+        })));
+        setCurrentIndex(-1);
+        setRound(0);
+        setCombatLog([]);
+        addLogEntry('Combat has been reset.', 'info');
+    }
+  };
+
+  const handleAddCondition = (participantId: string, condition: Omit<Condition, 'id'>) => {
+    const participant = participants.find(p => p.id === participantId);
+    if (participant) {
+        addLogEntry(`${participant.name} is now ${condition.name}.`, 'condition_add');
+    }
+    setParticipants(prev => prev.map(p => {
+        if (p.id === participantId) {
+            return {
+                ...p,
+                conditions: [...p.conditions, { ...condition, id: Date.now().toString() }]
+            };
+        }
+        return p;
+    }));
+  };
+
+  const handleRemoveCondition = (participantId: string, conditionId: string) => {
+      const participant = participants.find(p => p.id === participantId);
+      if (participant) {
+        const condition = participant.conditions.find(c => c.id === conditionId);
+        if (condition) {
+            addLogEntry(`${participant.name} is no longer ${condition.name}.`, 'condition_remove');
+        }
+      }
+      setParticipants(prev => prev.map(p => {
+          if (p.id === participantId) {
+              return {
+                  ...p,
+                  conditions: p.conditions.filter(c => c.id !== conditionId)
+              };
+          }
+          return p;
+      }));
+  };
+
+  const handleSaveState = () => {
+    try {
+      const stateToSave: SavedState = {
+        participants,
+        currentIndex,
+        round,
+        combatLog,
+      };
+      const dataStr = JSON.stringify(stateToSave, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      const timestamp = new Date().toISOString().split('T')[0];
+      link.download = `dnd-initiative-save-${timestamp}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to save state:", error);
+      alert("An error occurred while trying to save the session.");
+    }
+  };
+
+  const handleLoadState = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const result = event.target?.result;
+        if (typeof result !== 'string') {
+          throw new Error("Failed to read file content.");
+        }
+        const loadedState = JSON.parse(result);
+
+        if (
+          Array.isArray(loadedState.participants) &&
+          typeof loadedState.currentIndex === 'number' &&
+          typeof loadedState.round === 'number'
+        ) {
+          const stateWithLog: SavedState = {
+            ...loadedState,
+            combatLog: loadedState.combatLog || []
+          };
+          setLoadedStateForReroll(stateWithLog);
+        } else {
+          throw new Error("Invalid save file format.");
+        }
+      } catch (error) {
+        console.error("Failed to load state:", error);
+        alert("Error: Could not load the save file. It may be corrupted or in an incorrect format.");
+      }
+    };
+    reader.onerror = () => {
+      alert("Error: Failed to read the selected file.");
+    };
+    reader.readAsText(file);
+  };
+
+  const handleAddCreaturesFromFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const result = event.target?.result;
+        if (typeof result !== 'string') throw new Error("Failed to read file content.");
+        const loadedState: SavedState = JSON.parse(result);
+
+        if (!Array.isArray(loadedState.participants)) throw new Error("Invalid save file format.");
+        
+        const creaturesOnly = loadedState.participants.filter(p => p.type === 'creature');
+        if (creaturesOnly.length > 0) {
+            setCreaturesToAdd(creaturesOnly);
+        } else {
+            alert("The selected file contains no creatures to add.");
+        }
+      } catch (error) {
+        console.error("Failed to load creatures from file:", error);
+        alert("Error: Could not load creatures from the file. It may be corrupted or in an incorrect format.");
+      }
+    };
+    reader.onerror = () => {
+      alert("Error: Failed to read the selected file.");
+    };
+    reader.readAsText(file);
+  };
+
+  const handleConfirmAddCreatures = (creaturesWithNewInitiative: Participant[]) => {
+    if (currentIndex > -1 && sortedParticipants[currentIndex]) {
+        setParticipantToFind(sortedParticipants[currentIndex].id);
+    }
+
+    const newCreaturesWithIds = creaturesWithNewInitiative.map((c, index) => ({
+        ...c,
+        id: `${Date.now()}-${c.name}-${index}` // More robust ID
+    }));
+
+    const newTotalParticipants = [...participants, ...newCreaturesWithIds];
+
+    if (currentIndex > -1) { // Only check for ties if combat is already running
+        const tiesToResolve = findTies(newTotalParticipants);
+        if (tiesToResolve.length > 0) {
+            setParticipants(newTotalParticipants);
+            setTies(tiesToResolve);
+            setCreaturesToAdd(null);
+            return;
+        }
+    }
+
+    setParticipants(newTotalParticipants);
+    setCreaturesToAdd(null);
+  };
+
+  const handleConfirmLoadAsIs = (stateToLoad: SavedState) => {
+    setParticipants(stateToLoad.participants);
+    setCurrentIndex(stateToLoad.currentIndex);
+    setRound(stateToLoad.round);
+    setCombatLog(stateToLoad.combatLog || []);
+    setLoadedStateForReroll(null);
+  };
+
+  const handleConfirmUpdateInitiative = (updatedParticipants: Participant[]) => {
+      setParticipants(updatedParticipants);
+      setCurrentIndex(-1);
+      setRound(0);
+      setCombatLog([]);
+      setLoadedStateForReroll(null);
+  };
+
+  const handleCancelLoad = () => {
+      setLoadedStateForReroll(null);
+  };
+
+  const handleResolveTies = (updatedParticipantsFromModal: Participant[]) => {
+    const updatedMap = new Map(updatedParticipantsFromModal.map(p => [p.id, p]));
+    setParticipants(prev => prev.map(p => updatedMap.get(p.id) || p));
+    setTies(null);
+
+    // If combat wasn't started, start it now.
+    if (currentIndex === -1 && round === 0) {
+      handleStart();
+    }
+  };
+
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        <header className="text-center mb-8">
+          <h1 className="text-5xl md:text-6xl font-medieval text-yellow-400 flex items-center justify-center gap-4">
+            <D20Icon className="w-12 h-12" />
+            Encounter Tracker
+            <D20Icon className="w-12 h-12" />
+          </h1>
+          <p className="text-gray-400 mt-2">The battle awaits. May the dice be ever in your favor.</p>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            <InitiativeList
+              participants={sortedParticipants}
+              currentIndex={currentIndex}
+              onRemove={handleRemoveParticipant}
+              onUpdateHp={handleUpdateHp}
+              onUpdateParticipant={handleUpdateParticipant}
+              onAddCondition={handleAddCondition}
+              onRemoveCondition={handleRemoveCondition}
+              onViewDetails={setViewingUrlDetails}
+              onLoot={setLootingParticipant}
+            />
+            <CombatLog entries={combatLog} />
+          </div>
+
+          <div className="space-y-8">
+            <CombatControls
+              round={round}
+              isCombatStarted={currentIndex > -1}
+              onStart={handleStart}
+              onNext={handleNext}
+              onPrev={handlePrev}
+              onEnd={handleEndCombat}
+              onReset={handleResetCombat}
+              hasParticipants={participants.length > 0}
+            />
+            <EncounterDifficulty participants={participants} />
+            <AddParticipantForm onAdd={handleAddParticipant} />
+            <SaveLoadControls 
+              onSave={handleSaveState}
+              onLoad={handleLoadState}
+              onAddFromFile={handleAddCreaturesFromFile}
+              hasParticipants={participants.length > 0}
+            />
+          </div>
+        </div>
+      </div>
+       {viewingUrlDetails && (
+        <StatblockModal 
+          url={viewingUrlDetails.url}
+          title={viewingUrlDetails.title}
+          onClose={() => setViewingUrlDetails(null)}
+        />
+      )}
+      {loadedStateForReroll && (
+        <RerollInitiativeModal
+          loadedState={loadedStateForReroll}
+          onConfirmLoadAsIs={handleConfirmLoadAsIs}
+          onConfirmUpdateInitiative={handleConfirmUpdateInitiative}
+          onClose={handleCancelLoad}
+        />
+      )}
+      {creaturesToAdd && (
+        <AddCreaturesModal
+            creatures={creaturesToAdd}
+            onConfirm={handleConfirmAddCreatures}
+            onClose={() => setCreaturesToAdd(null)}
+        />
+      )}
+      {lootingParticipant && (
+        <LootModal 
+          participant={lootingParticipant}
+          onClose={() => setLootingParticipant(null)}
+        />
+      )}
+      {ties && (
+        <TieBreakerModal
+            ties={ties}
+            onResolve={handleResolveTies}
+            onClose={() => setTies(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default App;

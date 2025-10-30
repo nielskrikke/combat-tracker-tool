@@ -1,0 +1,5 @@
+{
+  "name": "D&D combat tracker",
+  "description": "A powerful and visually appealing initiative tracker for Dungeons & Dragons sessions. Add characters and creatures, sort by initiative, manage combat turns, and track hit points, conditions, and legendary actions.",
+  "requestFramePermissions": []
+}

@@ -24,7 +24,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
   const [hp, setHp] = useState('');
   const [ac, setAc] = useState('');
   const [dexterityModifier, setDexterityModifier] = useState('');
-  const [cr, setCr] = useState<number | undefined>();
+  const [cr, setCr] = useState('');
   const [statblockUrl, setStatblockUrl] = useState<string>('');
   const [characterSheetUrl, setCharacterSheetUrl] = useState<string>('');
   const [dexApiUrl, setDexApiUrl] = useState<string>('');
@@ -197,8 +197,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         
         const parsedCr = extract(/Challenge\s*([\d/]+)/i);
         if (parsedCr) {
-            // eslint-disable-next-line no-eval
-            try { setCr(eval(parsedCr)); } catch { /* ignore eval error */ }
+            setCr(parsedCr);
         }
 
         // --- Dexterity Parsing ---
@@ -271,7 +270,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
     setHp('');
     setAc('');
     setDexterityModifier('');
-    setCr(undefined);
+    setCr('');
     setSearchQuery('');
     setSearchResults([]);
     setStatblockUrl('');
@@ -312,7 +311,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
       setHp(monsterData.hit_points.toString());
       const acValue = monsterData.armor_class?.[0]?.value ?? 10;
       setAc(acValue.toString());
-      setCr(monsterData.challenge_rating);
+      setCr(monsterData.challenge_rating.toString());
       const dexMod = Math.floor((monsterData.dexterity - 10) / 2);
       setDexterityModifier(dexMod.toString());
       setDexApiUrl(monsterUrl);
@@ -362,6 +361,15 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
     const isPlayerOrDMPC = combatantType === 'player' || combatantType === 'dmpc';
     if (name && initiative && ac && (isPlayerOrDMPC ? level : hp)) {
       const hpValue = hp ? parseInt(hp, 10) : undefined;
+      let crValue: number | undefined;
+      if (cr) {
+        try {
+            // eslint-disable-next-line no-eval
+            crValue = eval(cr);
+        } catch (err) {
+            console.warn("Could not parse CR value:", cr);
+        }
+      }
       
       onAdd({
         name,
@@ -372,7 +380,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         conditions: [],
         type: combatantType,
         level: isPlayerOrDMPC ? parseInt(level, 10) : undefined,
-        cr: combatantType === 'creature' ? cr : undefined,
+        cr: (combatantType === 'creature' || combatantType === 'dmpc') ? crValue : undefined,
         statblockUrl: combatantType === 'player' ? undefined : statblockUrl,
         characterSheetUrl: (combatantType === 'creature') ? undefined : characterSheetUrl,
         dexterityModifier: dexterityModifier ? parseInt(dexterityModifier, 10) : undefined,
@@ -583,7 +591,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
             disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
           />
         </div>
-        {(combatantType === 'player' || combatantType === 'dmpc') ? (
+        {combatantType === 'player' && (
             <div className="grid grid-cols-2 gap-4">
                 <input
                     type="number"
@@ -603,16 +611,57 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
                 />
             </div>
-        ) : (
-             <input
-                type="number"
-                placeholder="HP"
-                value={hp}
-                onChange={(e) => setHp(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
-                required
-                disabled={isLoading || isFetchingStatblock}
-            />
+        )}
+        {combatantType === 'dmpc' && (
+            <div className="grid grid-cols-3 gap-4">
+                <input
+                    type="number"
+                    placeholder="Level"
+                    value={level}
+                    onChange={(e) => setLevel(e.target.value)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    required
+                    disabled={isLoading || isFetchingCharacterSheet}
+                />
+                <input
+                    type="number"
+                    placeholder="HP (Optional)"
+                    value={hp}
+                    onChange={(e) => setHp(e.target.value)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
+                />
+                 <input
+                    type="text"
+                    placeholder="CR (Optional)"
+                    value={cr}
+                    onChange={(e) => setCr(e.target.value)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    disabled={isLoading || isFetchingStatblock}
+                />
+            </div>
+        )}
+        {combatantType === 'creature' && (
+             <div className="grid grid-cols-2 gap-4">
+                <input
+                    type="number"
+                    placeholder="HP"
+                    value={hp}
+                    onChange={(e) => setHp(e.target.value)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    required
+                    disabled={isLoading || isFetchingStatblock}
+                />
+                <input
+                    type="text"
+                    placeholder="CR"
+                    value={cr}
+                    onChange={(e) => setCr(e.target.value)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    required
+                    disabled={isLoading || isFetchingStatblock}
+                />
+            </div>
         )}
 
         {(combatantType === 'creature' || combatantType === 'dmpc') && (
@@ -820,7 +869,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         <button
           type="submit"
           className="w-full flex items-center justify-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-100"
-          disabled={!name || !initiative || !ac || (combatantType !== 'creature' && !level) || (combatantType === 'creature' && !hp) || isLoading || isFetchingCharacterSheet || isFetchingStatblock}
+          disabled={!name || !initiative || !ac || ((combatantType === 'player' || combatantType === 'dmpc') && !level) || (combatantType === 'creature' && (!hp || !cr)) || isLoading || isFetchingCharacterSheet || isFetchingStatblock}
         >
           {isLoading || isFetchingCharacterSheet || isFetchingStatblock ? (
             <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">

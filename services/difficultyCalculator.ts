@@ -61,8 +61,18 @@ function getEncounterMultiplier(numCreatures: number): number {
 }
 
 export function calculateDifficulty(participants: Participant[]): DifficultyInfo | null {
-  const players = participants.filter(p => (p.type === 'player' || p.type === 'dmpc') && p.level);
-  const creatures = participants.filter(p => p.type === 'creature' && typeof p.cr === 'number');
+  const creatures = participants.filter(p => 
+    (p.type === 'creature' || p.type === 'dmpc') && typeof p.cr === 'number'
+  );
+
+  const players = participants.filter(p => {
+    if (p.type === 'player') return !!p.level;
+    if (p.type === 'dmpc') {
+      // Count as player only if they have a level AND are not already counted as a creature (by having a CR)
+      return !!p.level && typeof p.cr !== 'number';
+    }
+    return false;
+  });
 
   if (players.length === 0 || creatures.length === 0) {
     return null;

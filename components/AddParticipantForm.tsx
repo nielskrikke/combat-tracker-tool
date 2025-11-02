@@ -358,14 +358,20 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const isCreature = combatantType === 'creature';
     const isPlayerOrDMPC = combatantType === 'player' || combatantType === 'dmpc';
-    if (name && initiative && ac && (isPlayerOrDMPC ? level : hp)) {
+
+    // More robust validation mirroring the `disabled` prop logic
+    if (name && initiative && ac && (isCreature ? (hp && cr) : level)) {
       const hpValue = hp ? parseInt(hp, 10) : undefined;
       let crValue: number | undefined;
       if (cr) {
         try {
             // eslint-disable-next-line no-eval
-            crValue = eval(cr);
+            const evaluatedCr = eval(cr.toString());
+            if (typeof evaluatedCr === 'number') {
+                crValue = evaluatedCr;
+            }
         } catch (err) {
             console.warn("Could not parse CR value:", cr);
         }
@@ -380,20 +386,20 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         conditions: [],
         type: combatantType,
         level: isPlayerOrDMPC ? parseInt(level, 10) : undefined,
-        cr: (combatantType === 'creature' || combatantType === 'dmpc') ? crValue : undefined,
-        statblockUrl: combatantType === 'player' ? undefined : statblockUrl,
-        characterSheetUrl: (combatantType === 'creature') ? undefined : characterSheetUrl,
+        cr: (isCreature || combatantType === 'dmpc') ? crValue : undefined,
+        statblockUrl: isCreature || combatantType === 'dmpc' ? statblockUrl : undefined,
+        characterSheetUrl: isPlayerOrDMPC ? characterSheetUrl : undefined,
         dexterityModifier: dexterityModifier ? parseInt(dexterityModifier, 10) : undefined,
-        dexApiUrl: (combatantType === 'creature' || combatantType === 'dmpc') ? dexApiUrl : undefined,
-        damageVulnerabilities: combatantType === 'player' ? [] : damageVulnerabilities,
-        damageResistances: combatantType === 'player' ? [] : damageResistances,
-        damageImmunities: combatantType === 'player' ? [] : damageImmunities,
-        conditionImmunities: combatantType === 'player' ? [] : conditionImmunities,
-        legendaryResistances: (combatantType === 'player' || !hasLegendaryResistances) ? undefined : legendaryResistances,
-        legendaryResistancesUsed: (combatantType === 'player' || !hasLegendaryResistances) ? undefined : 0,
-        legendaryActions: (combatantType === 'player' || !hasLegendaryActions) ? undefined : legendaryActions,
-        legendaryActionsUsed: (combatantType === 'player' || !hasLegendaryActions) ? undefined : 0,
-        inventory: (combatantType === 'player' || inventory.length === 0) ? undefined : inventory,
+        dexApiUrl: isCreature || combatantType === 'dmpc' ? dexApiUrl : undefined,
+        damageVulnerabilities: !isPlayerOrDMPC ? [] : damageVulnerabilities,
+        damageResistances: !isPlayerOrDMPC ? [] : damageResistances,
+        damageImmunities: !isPlayerOrDMPC ? [] : damageImmunities,
+        conditionImmunities: !isPlayerOrDMPC ? [] : conditionImmunities,
+        legendaryResistances: (isPlayerOrDMPC || !hasLegendaryResistances) ? undefined : legendaryResistances,
+        legendaryResistancesUsed: (isPlayerOrDMPC || !hasLegendaryResistances) ? undefined : 0,
+        legendaryActions: (isPlayerOrDMPC || !hasLegendaryActions) ? undefined : legendaryActions,
+        legendaryActionsUsed: (isPlayerOrDMPC || !hasLegendaryActions) ? undefined : 0,
+        inventory: (isPlayerOrDMPC || inventory.length === 0) ? undefined : inventory,
       });
       resetForm();
     }

@@ -25,6 +25,8 @@ const CR_XP_MAP: { [key: number]: number } = {
   26: 90000, 27: 105000, 28: 120000, 29: 135000, 30: 155000,
 };
 
+const VALID_CR_NUMBERS = Object.keys(CR_XP_MAP).map(Number);
+
 // Per-character XP thresholds by level from DMG
 const XP_THRESHOLDS: [number, number, number, number][] = [
   // Easy, Medium, Hard, Deadly
@@ -93,7 +95,14 @@ export function calculateDifficulty(participants: Participant[]): DifficultyInfo
 
   // Calculate total creature XP
   const totalRawXp = creatures.reduce((sum, c) => {
-    return sum + (CR_XP_MAP[c.cr!] || 0);
+    if (c.cr === undefined) return sum;
+
+    // Find the closest valid CR in our map to handle non-standard CRs (e.g., from homebrew)
+    const closestCR = VALID_CR_NUMBERS.reduce((prev, curr) => {
+        return (Math.abs(curr - c.cr!) < Math.abs(prev - c.cr!)) ? curr : prev;
+    });
+
+    return sum + (CR_XP_MAP[closestCR] || 0);
   }, 0);
 
   // Apply multiplier

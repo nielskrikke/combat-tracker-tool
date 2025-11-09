@@ -6,11 +6,10 @@ interface InitiativeListProps {
   participants: Participant[];
   currentIndex: number;
   onRemove: (id: string) => void;
-  onUpdateHp: (id: string, newHp: number) => void;
   onUpdateParticipant: (id: string, updates: Partial<Participant>) => void;
   onAddCondition: (participantId: string, condition: Omit<Condition, 'id'>) => void;
   onRemoveCondition: (participantId: string, conditionId: string) => void;
-  onViewDetails: (details: { url: string; title: string }) => void;
+  onViewDetails: (details: { url?: string; description?: string; title: string }) => void;
   onLoot: (participant: Participant) => void;
 }
 
@@ -18,7 +17,6 @@ export const InitiativeList: React.FC<InitiativeListProps> = ({
   participants,
   currentIndex,
   onRemove,
-  onUpdateHp,
   onUpdateParticipant,
   onAddCondition,
   onRemoveCondition,
@@ -43,7 +41,6 @@ export const InitiativeList: React.FC<InitiativeListProps> = ({
               isActive={index === currentIndex}
               isCombatActive={currentIndex > -1}
               onRemove={onRemove}
-              onUpdateHp={onUpdateHp}
               onUpdateParticipant={onUpdateParticipant}
               onAddCondition={onAddCondition}
               onRemoveCondition={onRemoveCondition}

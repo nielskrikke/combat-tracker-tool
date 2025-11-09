@@ -4,6 +4,7 @@ import { InitiativeList } from './components/InitiativeList';
 import { CombatControls } from './components/CombatControls';
 import { SaveLoadControls } from './components/SaveLoadControls';
 import { StatblockModal } from './components/StatblockModal';
+import { DescriptionViewerModal } from './components/DescriptionViewerModal';
 import { RerollInitiativeModal } from './components/RerollInitiativeModal';
 import { AddCreaturesModal } from './components/AddCreaturesModal';
 import { LootModal } from './components/LootModal';
@@ -25,7 +26,7 @@ const App: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [round, setRound] = useState<number>(0);
   const [combatLog, setCombatLog] = useState<LogEntry[]>([]);
-  const [viewingUrlDetails, setViewingUrlDetails] = useState<{ url: string; title: string } | null>(null);
+  const [detailsToShow, setDetailsToShow] = useState<{ url?: string; description?: string; title: string } | null>(null);
   const [loadedStateForReroll, setLoadedStateForReroll] = useState<SavedState | null>(null);
   const [creaturesToAdd, setCreaturesToAdd] = useState<Participant[] | null>(null);
   const [participantToFind, setParticipantToFind] = useState<string | null>(null);
@@ -156,36 +157,41 @@ const App: React.FC = () => {
       }
     }
   };
-
-  const handleUpdateHp = (id: string, newHp: number) => {
+  
+  const handleUpdateParticipant = useCallback((id: string, updates: Partial<Participant>) => {
     const participant = participants.find(p => p.id === id);
-    if (participant && typeof participant.hp === 'number') {
+    if (!participant) return;
+
+    // Log HP changes
+    if (updates.hp !== undefined && typeof participant.hp === 'number') {
         const oldHp = participant.hp;
-        const clampedHp = Math.max(0, newHp);
-        if (clampedHp < oldHp) {
-            addLogEntry(`${participant.name} takes ${oldHp - clampedHp} damage.`, 'damage');
-        } else if (clampedHp > oldHp) {
-            addLogEntry(`${participant.name} heals for ${clampedHp - oldHp} hit points.`, 'healing');
+        const newHp = Math.max(0, updates.hp);
+        if (newHp < oldHp) {
+            addLogEntry(`${participant.name} takes ${oldHp - newHp} damage.`, 'damage');
+        } else if (newHp > oldHp) {
+            addLogEntry(`${participant.name} heals for ${newHp - oldHp} hit points.`, 'healing');
         }
-        if (clampedHp <= 0 && oldHp > 0) {
+        if (newHp <= 0 && oldHp > 0) {
             addLogEntry(`${participant.name} has been defeated!`, 'death');
         }
     }
+    
+    // Log Temp HP changes
+    if (updates.tempHp !== undefined) {
+         const oldTempHp = participant.tempHp || 0;
+         const newTempHp = Math.max(0, updates.tempHp);
+         if (newTempHp > oldTempHp) {
+             addLogEntry(`${participant.name} gains ${newTempHp - oldTempHp} temporary hit points.`, 'info');
+         }
+    }
 
-    setParticipants(prev =>
-      prev.map(p => (p.id === id ? { ...p, hp: Math.max(0, newHp) } : p))
-    );
-  };
-  
-  const handleUpdateParticipant = useCallback((id: string, updates: Partial<Participant>) => {
     if (currentIndex > -1 && updates.initiative !== undefined && sortedParticipants[currentIndex]) {
-      // If initiative is changed mid-combat, we need to find the new index of the current turn's participant after sorting.
-      setParticipantToFind(sortedParticipants[currentIndex].id);
+        setParticipantToFind(sortedParticipants[currentIndex].id);
     }
     setParticipants(prev =>
-      prev.map(p => (p.id === id ? { ...p, ...updates } : p))
+        prev.map(p => (p.id === id ? { ...p, ...updates } : p))
     );
-  }, [currentIndex, sortedParticipants]);
+  }, [participants, currentIndex, sortedParticipants, addLogEntry]);
 
   const handleStart = () => {
     if (participants.length > 0) {
@@ -260,10 +266,11 @@ const App: React.FC = () => {
   };
 
   const handleResetCombat = () => {
-    if (confirm("Are you sure you want to reset all combatants to full health, remove all conditions, and reset resources? This cannot be undone.")) {
+    if (confirm("Are you sure you want to simulate a long rest? This will reset all combatants to full health, remove all conditions, and reset resources. This cannot be undone.")) {
         setParticipants(prev => prev.map(p => ({
             ...p,
             hp: p.maxHp,
+            tempHp: 0,
             conditions: [],
             legendaryResistancesUsed: 0,
             legendaryActionsUsed: 0,
@@ -273,6 +280,14 @@ const App: React.FC = () => {
         setCombatLog([]);
         addLogEntry('Combat has been reset.', 'info');
     }
+  };
+
+  const handleClearInitiative = () => {
+    setParticipants([]);
+    setCurrentIndex(-1);
+    setRound(0);
+    setCombatLog([]);
+    addLogEntry('Battlefield has been cleared.', 'info', 'System');
   };
 
   const handleAddCondition = (participantId: string, condition: Omit<Condition, 'id'>) => {
@@ -472,11 +487,10 @@ const App: React.FC = () => {
               participants={sortedParticipants}
               currentIndex={currentIndex}
               onRemove={handleRemoveParticipant}
-              onUpdateHp={handleUpdateHp}
               onUpdateParticipant={handleUpdateParticipant}
               onAddCondition={handleAddCondition}
               onRemoveCondition={handleRemoveCondition}
-              onViewDetails={setViewingUrlDetails}
+              onViewDetails={setDetailsToShow}
               onLoot={setLootingParticipant}
             />
             <CombatLog entries={combatLog} />
@@ -491,6 +505,7 @@ const App: React.FC = () => {
               onPrev={handlePrev}
               onEnd={handleEndCombat}
               onReset={handleResetCombat}
+              onClear={handleClearInitiative}
               hasParticipants={participants.length > 0}
             />
             <EncounterDifficulty participants={participants} />
@@ -504,11 +519,18 @@ const App: React.FC = () => {
           </div>
         </div>
       </div>
-       {viewingUrlDetails && (
+       {detailsToShow?.url && (
         <StatblockModal 
-          url={viewingUrlDetails.url}
-          title={viewingUrlDetails.title}
-          onClose={() => setViewingUrlDetails(null)}
+          url={detailsToShow.url}
+          title={detailsToShow.title}
+          onClose={() => setDetailsToShow(null)}
+        />
+      )}
+      {detailsToShow?.description && (
+        <DescriptionViewerModal
+          description={detailsToShow.description}
+          title={detailsToShow.title}
+          onClose={() => setDetailsToShow(null)}
         />
       )}
       {loadedStateForReroll && (

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Participant, InventoryItem } from '../types';
-import { PlusCircleIcon, RefreshIcon, TrashIcon, PlusIcon, LinkIcon, FilterIcon } from './icons';
+import { PlusCircleIcon, RefreshIcon, TrashIcon, PlusIcon, LinkIcon, FilterIcon, PencilSquareIcon } from './icons';
 import { CreatureSearchModal } from './CreatureSearchModal';
 import { MagicItemSearchModal } from './MagicItemSearchModal';
+import { DescriptionEditorModal } from './DescriptionEditorModal';
 import { useMonsters } from './MonsterProvider';
 import { useMagicItems } from './MagicItemProvider';
 
@@ -27,6 +28,8 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
   const [cr, setCr] = useState('');
   const [statblockUrl, setStatblockUrl] = useState<string>('');
   const [characterSheetUrl, setCharacterSheetUrl] = useState<string>('');
+  const [description, setDescription] = useState('');
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [dexApiUrl, setDexApiUrl] = useState<string>('');
   
   const [damageVulnerabilities, setDamageVulnerabilities] = useState<string[]>([]);
@@ -44,6 +47,8 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
   const [newItemName, setNewItemName] = useState('');
   const [newItemAmount, setNewItemAmount] = useState('1');
   const [newItemUrl, setNewItemUrl] = useState('');
+  const [newItemDescription, setNewItemDescription] = useState('');
+  const [isEditingItemDescription, setIsEditingItemDescription] = useState(false);
   const [isUrlInputVisible, setIsUrlInputVisible] = useState(false);
   const [inventoryMode, setInventoryMode] = useState<'magic' | 'custom'>('magic');
   const [magicItemSearchQuery, setMagicItemSearchQuery] = useState('');
@@ -275,6 +280,8 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
     setSearchResults([]);
     setStatblockUrl('');
     setCharacterSheetUrl('');
+    setDescription('');
+    setIsEditingDescription(false);
     setDexApiUrl('');
     setDamageVulnerabilities([]);
     setDamageResistances([]);
@@ -288,6 +295,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
     setNewItemName('');
     setNewItemAmount('1');
     setNewItemUrl('');
+    setNewItemDescription('');
     setIsUrlInputVisible(false);
     setInventoryMode('magic');
     setMagicItemSearchQuery('');
@@ -362,7 +370,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
     const isPlayerOrDMPC = combatantType === 'player' || combatantType === 'dmpc';
 
     // More robust validation mirroring the `disabled` prop logic
-    if (name && initiative && ac && (isCreature ? (hp && cr) : level)) {
+    if (name && initiative && ac && (combatantType !== 'player' || !!level) && (combatantType !== 'creature' || (!!hp && !!cr))) {
       const hpValue = hp ? parseInt(hp, 10) : undefined;
       let crValue: number | undefined;
       if (cr) {
@@ -382,24 +390,26 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         initiative: parseInt(initiative, 10),
         hp: hpValue,
         maxHp: hpValue,
+        tempHp: 0,
         ac: parseInt(ac, 10),
         conditions: [],
         type: combatantType,
-        level: isPlayerOrDMPC ? parseInt(level, 10) : undefined,
+        level: isPlayerOrDMPC && level ? parseInt(level, 10) : undefined,
         cr: (isCreature || combatantType === 'dmpc') ? crValue : undefined,
         statblockUrl: isCreature || combatantType === 'dmpc' ? statblockUrl : undefined,
         characterSheetUrl: isPlayerOrDMPC ? characterSheetUrl : undefined,
+        description: description || undefined,
         dexterityModifier: dexterityModifier ? parseInt(dexterityModifier, 10) : undefined,
         dexApiUrl: isCreature || combatantType === 'dmpc' ? dexApiUrl : undefined,
-        damageVulnerabilities: !isPlayerOrDMPC ? [] : damageVulnerabilities,
-        damageResistances: !isPlayerOrDMPC ? [] : damageResistances,
-        damageImmunities: !isPlayerOrDMPC ? [] : damageImmunities,
-        conditionImmunities: !isPlayerOrDMPC ? [] : conditionImmunities,
-        legendaryResistances: (isPlayerOrDMPC || !hasLegendaryResistances) ? undefined : legendaryResistances,
-        legendaryResistancesUsed: (isPlayerOrDMPC || !hasLegendaryResistances) ? undefined : 0,
-        legendaryActions: (isPlayerOrDMPC || !hasLegendaryActions) ? undefined : legendaryActions,
-        legendaryActionsUsed: (isPlayerOrDMPC || !hasLegendaryActions) ? undefined : 0,
-        inventory: (isPlayerOrDMPC || inventory.length === 0) ? undefined : inventory,
+        damageVulnerabilities: (combatantType === 'creature' || combatantType === 'dmpc') ? damageVulnerabilities : [],
+        damageResistances: (combatantType === 'creature' || combatantType === 'dmpc') ? damageResistances : [],
+        damageImmunities: (combatantType === 'creature' || combatantType === 'dmpc') ? damageImmunities : [],
+        conditionImmunities: (combatantType === 'creature' || combatantType === 'dmpc') ? conditionImmunities : [],
+        legendaryResistances: (isCreature && hasLegendaryResistances) ? legendaryResistances : undefined,
+        legendaryResistancesUsed: (isCreature && hasLegendaryResistances) ? 0 : undefined,
+        legendaryActions: (isCreature && hasLegendaryActions) ? legendaryActions : undefined,
+        legendaryActionsUsed: (isCreature && hasLegendaryActions) ? 0 : undefined,
+        inventory: (combatantType === 'creature' || combatantType === 'dmpc') ? inventory : undefined,
       });
       resetForm();
     }
@@ -410,11 +420,13 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         setInventory(prev => [...prev, { 
             name: newItemName.trim(), 
             amount: parseInt(newItemAmount, 10) || 1,
-            url: newItemUrl.trim() || undefined 
+            url: newItemUrl.trim() || undefined,
+            description: newItemDescription.trim() || undefined,
         }]);
         setNewItemName('');
         setNewItemUrl('');
         setNewItemAmount('1');
+        setNewItemDescription('');
         setIsUrlInputVisible(false);
         setMagicItemSearchQuery('');
     }
@@ -429,6 +441,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
     setNewItemName('');
     setNewItemAmount('1');
     setNewItemUrl('');
+    setNewItemDescription('');
     setIsUrlInputVisible(false);
     setMagicItemSearchQuery('');
   };
@@ -492,7 +505,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
             <div className="relative" onBlur={() => setTimeout(() => setIsListFocused(false), 150)}>
                  <input
                     type="text"
-                    placeholder="Search D&D 5e API..."
+                    placeholder="Search creatures..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setIsListFocused(true)}
@@ -622,11 +635,10 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
             <div className="grid grid-cols-3 gap-4">
                 <input
                     type="number"
-                    placeholder="Level"
+                    placeholder="Level (Optional)"
                     value={level}
                     onChange={(e) => setLevel(e.target.value)}
                     className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
-                    required
                     disabled={isLoading || isFetchingCharacterSheet}
                 />
                 <input
@@ -695,6 +707,17 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                             </svg>
                         ) : (
                             <RefreshIcon className="w-5 h-5"/>
+                        )}
+                    </button>
+                     <button
+                        type="button"
+                        onClick={() => setIsEditingDescription(true)}
+                        className={`p-2 font-semibold rounded-md transition duration-300 ease-in-out flex-shrink-0 relative ${description ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-purple-600 hover:bg-purple-700 text-white'}`}
+                        title="Add Custom Description"
+                    >
+                        <PencilSquareIcon className="w-5 h-5"/>
+                        {description && (
+                            <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-yellow-400 ring-2 ring-gray-800"></span>
                         )}
                     </button>
                 </div>
@@ -791,7 +814,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                         <div className="relative flex-grow" onBlur={() => setTimeout(() => setIsMagicItemListFocused(false), 150)}>
                             <input 
                                 type="text" 
-                                placeholder="Search D&D 5e magic items..." 
+                                placeholder="Search magic items..." 
                                 value={magicItemSearchQuery} 
                                 onChange={e => setMagicItemSearchQuery(e.target.value)}
                                 onFocus={() => setIsMagicItemListFocused(true)}
@@ -836,7 +859,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                 ) : (
                     <div className="flex items-center gap-2">
                         <input type="number" placeholder="Qty" value={newItemAmount} onChange={e => setNewItemAmount(e.target.value)} min="1" className="bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition w-16 text-center"/>
-                        <input type="text" placeholder="Custom Item Name" value={newItemName} onChange={e => setNewItemName(e.target.value)} className="flex-grow bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"/>
+                        <input type="text" placeholder="Item Name" value={newItemName} onChange={e => setNewItemName(e.target.value)} className="flex-1 min-w-0 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"/>
                         
                         {isUrlInputVisible && (
                             <input 
@@ -844,11 +867,21 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                                 placeholder="URL" 
                                 value={newItemUrl} 
                                 onChange={e => setNewItemUrl(e.target.value)} 
-                                className="flex-grow bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                                className="flex-1 min-w-0 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
                                 autoFocus
                             />
                         )}
-
+                        <button
+                            type="button"
+                            onClick={() => setIsEditingItemDescription(true)}
+                            className={`p-2 rounded-md transition flex-shrink-0 relative ${newItemDescription ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-600 hover:bg-gray-500 text-gray-300'}`}
+                            title="Add Custom Description"
+                        >
+                            <PencilSquareIcon className="w-5 h-5"/>
+                            {newItemDescription && (
+                               <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-yellow-400 ring-2 ring-gray-800"></span>
+                            )}
+                        </button>
                         <button
                             type="button"
                             onClick={() => setIsUrlInputVisible(prev => !prev)}
@@ -875,7 +908,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         <button
           type="submit"
           className="w-full flex items-center justify-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-100"
-          disabled={!name || !initiative || !ac || ((combatantType === 'player' || combatantType === 'dmpc') && !level) || (combatantType === 'creature' && (!hp || !cr)) || isLoading || isFetchingCharacterSheet || isFetchingStatblock}
+          disabled={!name || !initiative || !ac || (combatantType === 'player' && !level) || (combatantType === 'creature' && (!hp || !cr)) || isLoading || isFetchingCharacterSheet || isFetchingStatblock}
         >
           {isLoading || isFetchingCharacterSheet || isFetchingStatblock ? (
             <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
@@ -889,6 +922,26 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         </button>
       </form>
     </div>
+    {isEditingDescription && (
+        <DescriptionEditorModal
+            initialDescription={description}
+            onSave={(newDesc) => {
+                setDescription(newDesc);
+                setIsEditingDescription(false);
+            }}
+            onClose={() => setIsEditingDescription(false)}
+        />
+    )}
+    {isEditingItemDescription && (
+        <DescriptionEditorModal
+            initialDescription={newItemDescription}
+            onSave={(newDesc) => {
+                setNewItemDescription(newDesc);
+                setIsEditingItemDescription(false);
+            }}
+            onClose={() => setIsEditingItemDescription(false)}
+        />
+    )}
     {isSearchModalOpen && (
         <CreatureSearchModal
             onClose={() => setIsSearchModalOpen(false)}

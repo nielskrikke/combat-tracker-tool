@@ -8,6 +8,7 @@ export interface InventoryItem {
   name: string;
   amount: number;
   url?: string;
+  description?: string;
 }
 
 export interface Participant {
@@ -16,6 +17,7 @@ export interface Participant {
   initiative: number;
   hp?: number;
   maxHp?: number;
+  tempHp?: number;
   ac: number;
   conditions: Condition[];
   type: 'player' | 'creature' | 'dmpc';
@@ -23,6 +25,7 @@ export interface Participant {
   cr?: number; // For creatures
   statblockUrl?: string;
   characterSheetUrl?: string;
+  description?: string; // Custom description field
   damageVulnerabilities?: string[];
   damageResistances?: string[];
   damageImmunities?: string[];

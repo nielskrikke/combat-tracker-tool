@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Participant, Condition } from '../types';
 import { ShieldIcon, HeartIcon, TrashIcon, EditIcon, CheckIcon, PlusIcon, BookOpenIcon, DiamondIcon, StarIcon, LootIcon } from './icons';
 import { ConditionManager } from './ConditionManager';
+import { HealthManagerModal } from './HealthManagerModal';
 
 interface ParticipantItemProps {
   participant: Participant;
   isActive: boolean;
   isCombatActive: boolean;
   onRemove: (id: string) => void;
-  onUpdateHp: (id: string, newHp: number) => void;
   onUpdateParticipant: (id: string, updates: Partial<Participant>) => void;
   onAddCondition: (participantId: string, condition: Omit<Condition, 'id'>) => void;
   onRemoveCondition: (participantId: string, conditionId: string) => void;
-  onViewDetails: (details: { url: string; title: string }) => void;
+  onViewDetails: (details: { url?: string; description?: string; title: string }) => void;
   onLoot: (participant: Participant) => void;
 }
 
@@ -113,40 +113,33 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
   isActive,
   isCombatActive,
   onRemove,
-  onUpdateHp,
   onUpdateParticipant,
   onAddCondition,
   onRemoveCondition,
   onViewDetails,
   onLoot,
 }) => {
-  const [isEditingHp, setIsEditingHp] = useState(false);
-  const [currentHp, setCurrentHp] = useState(participant.hp ?? 0);
+  const [isManagingHealth, setIsManagingHealth] = useState(false);
   const [isManagingConditions, setIsManagingConditions] = useState(false);
   const [isEditingInitiative, setIsEditingInitiative] = useState(false);
   const [newInitiative, setNewInitiative] = useState(participant.initiative.toString());
-
-  useEffect(() => {
-    setCurrentHp(participant.hp ?? 0);
-  }, [participant.hp]);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const confirmDeleteTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isEditingInitiative) {
         setNewInitiative(participant.initiative.toString());
     }
   }, [participant.initiative, isEditingInitiative]);
-
-
-  const handleHpUpdate = () => {
-    onUpdateHp(participant.id, currentHp);
-    setIsEditingHp(false);
-  };
   
-  const handleHpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleHpUpdate();
-    }
-  };
+  // Cleanup timeout on component unmount
+  useEffect(() => {
+    return () => {
+        if (confirmDeleteTimeoutRef.current) {
+            clearTimeout(confirmDeleteTimeoutRef.current);
+        }
+    };
+  }, []);
 
   const handleInitiativeUpdate = () => {
     const initiativeValue = parseInt(newInitiative, 10);
@@ -166,21 +159,47 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
     }
   };
 
+  const handleDeleteClick = () => {
+    if (isConfirmingDelete) {
+        if (confirmDeleteTimeoutRef.current) {
+            clearTimeout(confirmDeleteTimeoutRef.current);
+        }
+        onRemove(participant.id);
+    } else {
+        setIsConfirmingDelete(true);
+        confirmDeleteTimeoutRef.current = window.setTimeout(() => {
+            setIsConfirmingDelete(false);
+        }, 3000); // 3 seconds to confirm
+    }
+  };
+
+
   const handleLootClick = () => {
     onLoot(participant);
   };
 
   const hasHp = typeof participant.hp === 'number' && typeof participant.maxHp === 'number' && participant.maxHp > 0;
-  const hpPercentage = hasHp ? (participant.hp / participant.maxHp) * 100 : 0;
+  const currentHp = participant.hp ?? 0;
+  const maxHp = participant.maxHp ?? 1;
+  const tempHp = participant.tempHp ?? 0;
+
+  // HP Bar calculations
+  const hpPercentage = hasHp ? (currentHp / maxHp) * 100 : 0;
   const hpColorClass = hpPercentage > 50 ? 'bg-green-500' : hpPercentage > 25 ? 'bg-yellow-500' : 'bg-red-600';
+  
+  const totalEffectiveHp = currentHp + tempHp;
+  const totalBarFillPercentage = hasHp ? (Math.min(totalEffectiveHp, maxHp) / maxHp) * 100 : 0;
+
+  const hpSegmentPercentage = totalEffectiveHp > 0 ? (currentHp / totalEffectiveHp) * 100 : 0;
+  const tempHpSegmentPercentage = totalEffectiveHp > 0 ? (tempHp / totalEffectiveHp) * 100 : 0;
 
   const isDead = typeof participant.hp === 'number' && participant.hp <= 0;
-
   const hasLegendaryResistances = participant.type !== 'player' && participant.legendaryResistances && participant.legendaryResistances > 0;
   const hasLegendaryActions = participant.type !== 'player' && participant.legendaryActions && participant.legendaryActions > 0;
-
   const showLootButton = !isCombatActive && isDead && (participant.type === 'creature' || participant.type === 'dmpc');
 
+  const detailsUrl = participant.characterSheetUrl || participant.statblockUrl;
+  const hasDetails = detailsUrl || participant.description;
 
   return (
     <>
@@ -228,15 +247,16 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
             <span className={`font-bold text-lg ${isDead ? 'line-through text-gray-400' : 'text-white'}`}>
                 {participant.name}
             </span>
-             {(participant.statblockUrl || participant.characterSheetUrl) ? (
+             {hasDetails ? (
                 <button 
                     onClick={() => {
-                      const url = participant.characterSheetUrl || participant.statblockUrl;
-                      if (url) {
-                        onViewDetails({ url, title: `${participant.name}'s Sheet` });
+                      if (participant.description) {
+                        onViewDetails({ description: participant.description, title: `${participant.name}'s Description` });
+                      } else if (detailsUrl) {
+                        onViewDetails({ url: detailsUrl, title: `${participant.name}'s Sheet` });
                       }
                     }}
-                    title={participant.characterSheetUrl ? 'View Character Sheet' : 'View Statblock'}
+                    title={participant.description ? 'View Description' : (participant.characterSheetUrl ? 'View Character Sheet' : 'View Statblock')}
                 >
                     <BookOpenIcon className="w-5 h-5 text-gray-400 hover:text-yellow-400 transition" />
                 </button>
@@ -255,12 +275,32 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
         <div className="col-span-3 flex flex-col justify-center">
             {hasHp ? (
                 <>
-                    <div className="flex items-center gap-2">
-                        <HeartIcon className="w-4 h-4 text-red-400" />
-                        <span>{participant.hp} / {participant.maxHp}</span>
+                    <div className="flex items-center gap-2 text-sm">
+                        <span>
+                            {currentHp}
+                            {tempHp > 0 && <span className="text-sky-400 font-bold"> +{tempHp}</span>}
+                            &nbsp;/ {maxHp}
+                        </span>
                     </div>
                     <div className="w-full bg-gray-600 rounded-full h-2.5 mt-1">
-                        <div className={`${hpColorClass} h-2.5 rounded-full`} style={{ width: `${hpPercentage}%` }}></div>
+                        <div
+                            className="h-2.5 flex"
+                            style={{ width: `${totalBarFillPercentage}%` }}
+                            title={`HP: ${currentHp}, Temp HP: ${tempHp}`}
+                        >
+                            {currentHp > 0 && (
+                                <div
+                                    className={`${hpColorClass} h-full ${tempHp <= 0 ? 'rounded-full' : 'rounded-l-full'}`}
+                                    style={{ width: `${hpSegmentPercentage}%` }}
+                                ></div>
+                            )}
+                            {tempHp > 0 && (
+                                <div
+                                    className={`bg-sky-400 h-full ${currentHp <= 0 ? 'rounded-full' : 'rounded-r-full'}`}
+                                    style={{ width: `${tempHpSegmentPercentage}%` }}
+                                ></div>
+                            )}
+                        </div>
                     </div>
                 </>
             ) : (
@@ -292,33 +332,32 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
                 >
                     <PlusIcon className="w-4 h-4" />
                 </button>
-                {isEditingHp && hasHp ? (
-                    <div className="flex items-center">
-                        <input 
-                            type="number"
-                            value={currentHp}
-                            onChange={(e) => setCurrentHp(parseInt(e.target.value, 10))}
-                            onKeyDown={handleHpKeyDown}
-                            className="w-20 bg-gray-900 text-white text-center rounded-l-md p-1 border border-gray-500"
-                            autoFocus
-                        />
-                        <button onClick={handleHpUpdate} className="p-2 bg-green-600 hover:bg-green-700 rounded-r-md">
-                            <CheckIcon className="w-4 h-4"/>
-                        </button>
-                    </div>
-                ) : (
-                    <button onClick={() => setIsEditingHp(true)} className="p-2 bg-gray-600 hover:bg-gray-500 rounded-md" disabled={!hasHp}>
-                        <EditIcon className="w-4 h-4"/>
-                    </button>
-                )}
+                <button 
+                    onClick={() => setIsManagingHealth(true)} 
+                    className="p-2 bg-red-600/80 hover:bg-red-700 text-white rounded-md transition"
+                    disabled={!hasHp}
+                    aria-label={`Manage health for ${participant.name}`}
+                >
+                    <HeartIcon className="w-4 h-4"/>
+                </button>
               </>
           ) : null}
           <button
-            onClick={() => onRemove(participant.id)}
-            className="p-2 bg-red-800/80 hover:bg-red-700 text-white rounded-md transition"
-            aria-label={`Remove ${participant.name}`}
-          >
-            <TrashIcon className="w-4 h-4" />
+            onClick={handleDeleteClick}
+            onBlur={() => {
+                if (isConfirmingDelete) {
+                    if (confirmDeleteTimeoutRef.current) clearTimeout(confirmDeleteTimeoutRef.current);
+                    setIsConfirmingDelete(false);
+                }
+            }}
+            className={`p-2 rounded-md transition ${
+                isConfirmingDelete 
+                ? 'bg-red-600 text-white' 
+                : 'bg-gray-700 hover:bg-red-800 text-white'
+            }`}
+            aria-label={isConfirmingDelete ? `Confirm removal of ${participant.name}` : `Remove ${participant.name}`}
+            >
+            {isConfirmingDelete ? <CheckIcon className="w-4 h-4" /> : <TrashIcon className="w-4 h-4" />}
           </button>
         </div>
 
@@ -357,6 +396,13 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
           onAdd={(condition) => onAddCondition(participant.id, condition)}
           onRemove={(conditionId) => onRemoveCondition(participant.id, conditionId)}
           onClose={() => setIsManagingConditions(false)}
+        />
+      )}
+      {isManagingHealth && (
+        <HealthManagerModal
+            participant={participant}
+            onUpdateParticipant={onUpdateParticipant}
+            onClose={() => setIsManagingHealth(false)}
         />
       )}
     </>

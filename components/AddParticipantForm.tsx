@@ -405,10 +405,10 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         damageResistances: (combatantType === 'creature' || combatantType === 'dmpc') ? damageResistances : [],
         damageImmunities: (combatantType === 'creature' || combatantType === 'dmpc') ? damageImmunities : [],
         conditionImmunities: (combatantType === 'creature' || combatantType === 'dmpc') ? conditionImmunities : [],
-        legendaryResistances: (isCreature && hasLegendaryResistances) ? legendaryResistances : undefined,
-        legendaryResistancesUsed: (isCreature && hasLegendaryResistances) ? 0 : undefined,
-        legendaryActions: (isCreature && hasLegendaryActions) ? legendaryActions : undefined,
-        legendaryActionsUsed: (isCreature && hasLegendaryActions) ? 0 : undefined,
+        legendaryResistances: (combatantType !== 'player' && hasLegendaryResistances) ? legendaryResistances : undefined,
+        legendaryResistancesUsed: (combatantType !== 'player' && hasLegendaryResistances) ? 0 : undefined,
+        legendaryActions: (combatantType !== 'player' && hasLegendaryActions) ? legendaryActions : undefined,
+        legendaryActionsUsed: (combatantType !== 'player' && hasLegendaryActions) ? 0 : undefined,
         inventory: (combatantType === 'creature' || combatantType === 'dmpc') ? inventory : undefined,
       });
       resetForm();

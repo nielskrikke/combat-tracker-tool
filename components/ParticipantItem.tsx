@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import type { Participant, Condition } from '../types';
 import { ShieldIcon, HeartIcon, TrashIcon, EditIcon, CheckIcon, PlusIcon, BookOpenIcon, DiamondIcon, StarIcon, LootIcon } from './icons';
@@ -26,7 +27,7 @@ const TraitGrid: React.FC<{ participant: Participant }> = ({ participant }) => {
     const rightColHasItems = (damageImmunities && damageImmunities.length > 0) || (conditionImmunities && conditionImmunities.length > 0);
 
     return (
-        <div className={`col-span-12 mt-3 pt-3 border-t border-gray-700/60 grid grid-cols-1 ${leftColHasItems && rightColHasItems ? 'md:grid-cols-2' : ''} gap-x-6 gap-y-4 text-xs`}>
+        <div className={`col-span-12 mt-3 pt-3 border-t border-stone-700/60 grid grid-cols-1 ${leftColHasItems && rightColHasItems ? 'md:grid-cols-2' : ''} gap-x-6 gap-y-4 text-xs`}>
             {/* Left Column: Vulnerabilities & Resistances */}
             {leftColHasItems && (
                 <div>
@@ -34,15 +35,15 @@ const TraitGrid: React.FC<{ participant: Participant }> = ({ participant }) => {
                         <div className="mb-3">
                             <h5 className="font-bold text-red-400 mb-1 uppercase tracking-wider">Vulnerable</h5>
                             <div className="flex flex-wrap gap-1.5">
-                                {damageVulnerabilities.map(v => <span key={v} className="px-2 py-1 bg-red-900/80 text-red-200 rounded">{v}</span>)}
+                                {damageVulnerabilities.map(v => <span key={v} className="px-2 py-1 bg-red-900/50 text-red-300 rounded">{v}</span>)}
                             </div>
                         </div>
                     )}
                     {damageResistances && damageResistances.length > 0 && (
                         <div>
-                            <h5 className="font-bold text-cyan-400 mb-1 uppercase tracking-wider">Resistant</h5>
+                            <h5 className="font-bold text-sky-400 mb-1 uppercase tracking-wider">Resistant</h5>
                             <div className="flex flex-wrap gap-1.5">
-                                {damageResistances.map(r => <span key={r} className="px-2 py-1 bg-cyan-900/80 text-cyan-200 rounded">{r}</span>)}
+                                {damageResistances.map(r => <span key={r} className="px-2 py-1 bg-sky-900/50 text-sky-300 rounded">{r}</span>)}
                             </div>
                         </div>
                     )}
@@ -53,17 +54,17 @@ const TraitGrid: React.FC<{ participant: Participant }> = ({ participant }) => {
                 <div>
                     {damageImmunities && damageImmunities.length > 0 && (
                         <div className="mb-3">
-                            <h5 className="font-bold text-purple-400 mb-1 uppercase tracking-wider">Damage Immune</h5>
+                            <h5 className="font-bold text-violet-400 mb-1 uppercase tracking-wider">Damage Immune</h5>
                             <div className="flex flex-wrap gap-1.5">
-                                {damageImmunities.map(i => <span key={i} className="px-2 py-1 bg-purple-900/80 text-purple-200 rounded">{i}</span>)}
+                                {damageImmunities.map(i => <span key={i} className="px-2 py-1 bg-violet-900/50 text-violet-300 rounded">{i}</span>)}
                             </div>
                         </div>
                     )}
                     {conditionImmunities && conditionImmunities.length > 0 && (
                         <div>
-                            <h5 className="font-bold text-gray-400 mb-1 uppercase tracking-wider">Condition Immune</h5>
+                            <h5 className="font-bold text-stone-400 mb-1 uppercase tracking-wider">Condition Immune</h5>
                             <div className="flex flex-wrap gap-1.5">
-                                {conditionImmunities.map(ci => <span key={ci} className="px-2 py-1 bg-gray-600/80 text-gray-200 rounded">{ci}</span>)}
+                                {conditionImmunities.map(ci => <span key={ci} className="px-2 py-1 bg-stone-700/50 text-stone-300 rounded">{ci}</span>)}
                             </div>
                         </div>
                     )}
@@ -96,7 +97,7 @@ const LegendaryTracker: React.FC<{
                     <button 
                         key={i} 
                         onClick={() => toggleUsage(i)}
-                        className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white rounded-full transition-colors"
+                        className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-stone-800 focus:ring-white rounded-full transition-colors"
                         aria-label={`${label} ${i + 1} of ${max}. ${i < used ? 'Used' : 'Available'}.`}
                     >
                         <Icon className={`w-6 h-6 ${i < used ? usedColorClass : colorClass}`} />
@@ -185,7 +186,7 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
 
   // HP Bar calculations
   const hpPercentage = hasHp ? (currentHp / maxHp) * 100 : 0;
-  const hpColorClass = hpPercentage > 50 ? 'bg-green-500' : hpPercentage > 25 ? 'bg-yellow-500' : 'bg-red-600';
+  const hpColorClass = hpPercentage > 50 ? 'bg-emerald-500' : hpPercentage > 25 ? 'bg-amber-500' : 'bg-red-600';
   
   const totalEffectiveHp = currentHp + tempHp;
   const totalBarFillPercentage = hasHp ? (Math.min(totalEffectiveHp, maxHp) / maxHp) * 100 : 0;
@@ -206,7 +207,7 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
       <li
         className={`
           grid grid-cols-12 gap-x-4 gap-y-2 items-center p-3 rounded-lg transition-all duration-300
-          ${isActive ? 'bg-yellow-900/50 ring-2 ring-yellow-400' : 'bg-gray-700/50 hover:bg-gray-700'}
+          ${isActive ? 'bg-stone-700/80 ring-2 ring-amber-500' : 'bg-stone-800/50 hover:bg-stone-700/80'}
           ${isDead ? 'opacity-50' : ''}
         `}
       >
@@ -219,10 +220,10 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
                         onChange={(e) => setNewInitiative(e.target.value)}
                         onKeyDown={handleInitiativeKeyDown}
                         onBlur={handleInitiativeUpdate}
-                        className="w-16 bg-gray-900 text-white text-center rounded-md p-1 border border-gray-500 text-xl"
+                        className="w-16 bg-stone-900 text-white text-center rounded-md p-1 border border-stone-600 text-xl"
                         autoFocus
                     />
-                    <button onClick={handleInitiativeUpdate} className="p-1 text-green-400 hover:text-green-300 rounded-full">
+                    <button onClick={handleInitiativeUpdate} className="p-1 text-emerald-400 hover:text-emerald-300 rounded-full">
                         <CheckIcon className="w-5 h-5"/>
                     </button>
                  </div>
@@ -233,7 +234,7 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
                     title="Click to edit initiative"
                 >
                     <span>{participant.initiative}</span>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity text-stone-400">
                         <EditIcon className="w-4 h-4" />
                     </div>
                 </div>
@@ -244,7 +245,7 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
              <span role="img" aria-label={participant.type} className="text-xl">
                 {participant.type === 'player' ? '🧑' : participant.type === 'dmpc' ? '🎭' : '🐲'}
              </span>
-            <span className={`font-bold text-lg ${isDead ? 'line-through text-gray-400' : 'text-white'}`}>
+            <span className={`font-bold text-lg ${isDead ? 'line-through text-stone-400' : 'text-white'}`}>
                 {participant.name}
             </span>
              {hasDetails ? (
@@ -258,14 +259,14 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
                     }}
                     title={participant.description ? 'View Description' : (participant.characterSheetUrl ? 'View Character Sheet' : 'View Statblock')}
                 >
-                    <BookOpenIcon className="w-5 h-5 text-gray-400 hover:text-yellow-400 transition" />
+                    <BookOpenIcon className="w-5 h-5 text-stone-400 hover:text-amber-400 transition" />
                 </button>
             ) : null}
           </div>
           {isDead && <span className="text-xs text-red-500 font-bold ml-7">DEFEATED</span>}
           <div className="flex flex-wrap gap-1 mt-1 ml-7">
               {participant.conditions.map(condition => (
-                  <span key={condition.id} className="px-2 py-0.5 text-xs bg-indigo-600 text-indigo-100 rounded-full">
+                  <span key={condition.id} className="px-2 py-0.5 text-xs bg-violet-800 text-violet-100 rounded-full">
                       {condition.name} {condition.duration !== Infinity && `(${condition.duration})`}
                   </span>
               ))}
@@ -282,7 +283,7 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
                             &nbsp;/ {maxHp}
                         </span>
                     </div>
-                    <div className="w-full bg-gray-600 rounded-full h-2.5 mt-1">
+                    <div className="w-full bg-stone-900 rounded-full h-2.5 mt-1">
                         <div
                             className="h-2.5 flex"
                             style={{ width: `${totalBarFillPercentage}%` }}
@@ -304,12 +305,12 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
                     </div>
                 </>
             ) : (
-                <div className="text-gray-500 text-sm">HP not tracked</div>
+                <div className="text-stone-500 text-sm">HP not tracked</div>
             )}
         </div>
 
         <div className="col-span-1 flex items-center justify-center gap-1">
-          <ShieldIcon className="w-5 h-5 text-blue-400" />
+          <ShieldIcon className="w-5 h-5 text-sky-400" />
           <span className="font-bold text-lg">{participant.ac}</span>
         </div>
 
@@ -317,7 +318,7 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
           {showLootButton ? (
              <button 
                 onClick={handleLootClick}
-                className="p-2 bg-yellow-600/80 hover:bg-yellow-700 text-white font-bold text-sm rounded-md transition flex items-center gap-1"
+                className="p-2 bg-amber-700/80 hover:bg-amber-600 text-white font-bold text-sm rounded-md transition flex items-center gap-1"
                 aria-label={`Loot ${participant.name}`}
             >
                 <LootIcon className="w-4 h-4" />
@@ -327,14 +328,14 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
               <>
                  <button 
                     onClick={() => setIsManagingConditions(true)}
-                    className="p-2 bg-indigo-600/80 hover:bg-indigo-700 text-white rounded-md transition"
+                    className="p-2 bg-stone-600 hover:bg-stone-500 text-white rounded-md transition"
                     aria-label={`Manage conditions for ${participant.name}`}
                 >
                     <PlusIcon className="w-4 h-4" />
                 </button>
                 <button 
                     onClick={() => setIsManagingHealth(true)} 
-                    className="p-2 bg-red-600/80 hover:bg-red-700 text-white rounded-md transition"
+                    className="p-2 bg-stone-600 hover:bg-stone-500 text-white rounded-md transition"
                     disabled={!hasHp}
                     aria-label={`Manage health for ${participant.name}`}
                 >
@@ -352,8 +353,8 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
             }}
             className={`p-2 rounded-md transition ${
                 isConfirmingDelete 
-                ? 'bg-red-600 text-white' 
-                : 'bg-gray-700 hover:bg-red-800 text-white'
+                ? 'bg-red-700 text-white' 
+                : 'bg-stone-600 hover:bg-red-700 text-white'
             }`}
             aria-label={isConfirmingDelete ? `Confirm removal of ${participant.name}` : `Remove ${participant.name}`}
             >
@@ -362,7 +363,7 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
         </div>
 
         {(hasLegendaryResistances || hasLegendaryActions) && (
-            <div className="col-span-12 mt-3 pt-3 border-t border-gray-700/60 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+            <div className="col-span-12 mt-3 pt-3 border-t border-stone-700/60 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                 {hasLegendaryResistances && (
                     <LegendaryTracker
                         label="Legendary Resistances"
@@ -370,8 +371,8 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
                         used={participant.legendaryResistancesUsed!}
                         onUpdate={(newUsed) => onUpdateParticipant(participant.id, { legendaryResistancesUsed: newUsed })}
                         Icon={DiamondIcon}
-                        colorClass="text-yellow-300"
-                        usedColorClass="text-gray-600"
+                        colorClass="text-amber-400"
+                        usedColorClass="text-stone-600"
                     />
                 )}
                 {hasLegendaryActions && (
@@ -382,7 +383,7 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
                         onUpdate={(newUsed) => onUpdateParticipant(participant.id, { legendaryActionsUsed: newUsed })}
                         Icon={StarIcon}
                         colorClass="text-sky-400"
-                        usedColorClass="text-gray-600"
+                        usedColorClass="text-stone-600"
                     />
                 )}
             </div>

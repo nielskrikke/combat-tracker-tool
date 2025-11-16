@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Participant, InventoryItem } from '../types';
 import { PlusCircleIcon, RefreshIcon, TrashIcon, PlusIcon, LinkIcon, FilterIcon, PencilSquareIcon } from './icons';
@@ -470,14 +471,14 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
 
   return (
     <>
-    <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
-      <h3 className="text-2xl font-medieval text-yellow-400 mb-4">Add Combatant</h3>
+    <div className="bg-stone-800/50 rounded-lg shadow-lg p-6 border border-stone-700">
+      <h3 className="text-2xl font-medieval text-white mb-4">Add Combatant</h3>
       
       <div className="flex rounded-md shadow-sm mb-4" role="group">
         <button
           type="button"
           onClick={() => handleTypeChange('player')}
-          className={`px-4 py-2 text-sm font-medium text-white rounded-l-lg flex items-center justify-center gap-2 w-1/3 transition-colors ${combatantType === 'player' ? 'bg-red-700' : 'bg-gray-700 hover:bg-gray-600'}`}
+          className={`px-4 py-2 text-sm font-medium text-white rounded-l-lg flex items-center justify-center gap-2 w-1/3 transition-colors ${combatantType === 'player' ? 'bg-amber-700' : 'bg-stone-700 hover:bg-stone-600'}`}
         >
           <span role="img" aria-label="Player" className="text-lg">🧑</span>
           Player
@@ -485,7 +486,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         <button
           type="button"
           onClick={() => handleTypeChange('dmpc')}
-          className={`px-4 py-2 text-sm font-medium text-white flex items-center justify-center gap-2 w-1/3 transition-colors border-y-0 border-x border-gray-900/50 ${combatantType === 'dmpc' ? 'bg-red-700' : 'bg-gray-700 hover:bg-gray-600'}`}
+          className={`px-4 py-2 text-sm font-medium text-white flex items-center justify-center gap-2 w-1/3 transition-colors border-y-0 border-x border-stone-900/50 ${combatantType === 'dmpc' ? 'bg-amber-700' : 'bg-stone-700 hover:bg-stone-600'}`}
         >
           <span role="img" aria-label="DMPC" className="text-lg">🎭</span>
           DMPC
@@ -493,7 +494,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         <button
           type="button"
           onClick={() => handleTypeChange('creature')}
-          className={`px-4 py-2 text-sm font-medium text-white rounded-r-lg flex items-center justify-center gap-2 w-1/3 transition-colors ${combatantType === 'creature' ? 'bg-red-700' : 'bg-gray-700 hover:bg-gray-600'}`}
+          className={`px-4 py-2 text-sm font-medium text-white rounded-r-lg flex items-center justify-center gap-2 w-1/3 transition-colors ${combatantType === 'creature' ? 'bg-amber-700' : 'bg-stone-700 hover:bg-stone-600'}`}
         >
           <span role="img" aria-label="Creature" className="text-lg">🐲</span>
           Creature
@@ -509,13 +510,13 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setIsListFocused(true)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-md pl-3 pr-20 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    className="w-full bg-stone-900/50 border border-stone-600 rounded-md pl-3 pr-20 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-2">
                     <button
                         type="button"
                         onClick={() => setIsSearchModalOpen(true)}
-                        className="p-1 text-gray-400 hover:text-white transition-colors"
+                        className="p-1 text-stone-400 hover:text-white transition-colors"
                         title="Advanced Creature Search"
                         aria-label="Advanced Creature Search"
                     >
@@ -527,18 +528,18 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                         rel="noopener noreferrer" 
                         title="Open Monster Database in new tab"
                         aria-label="Open Monster Database in new tab"
-                        className="p-1 text-blue-400 hover:text-blue-300 transition-colors"
+                        className="p-1 text-sky-400 hover:text-sky-300 transition-colors"
                     >
                         <LinkIcon className="w-5 h-5" />
                     </a>
                 </div>
                 {isListFocused && searchResults.length > 0 && (
-                    <ul className="absolute z-10 w-full mt-1 bg-gray-700 border border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <ul className="absolute z-10 w-full mt-1 bg-stone-700 border border-stone-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
                     {searchResults.map((monster) => (
                         <li
                         key={monster.index}
                         onClick={() => handleSelectMonster(monster.url)}
-                        className="px-4 py-2 text-white hover:bg-red-700 cursor-pointer"
+                        className="px-4 py-2 text-white hover:bg-amber-700 cursor-pointer"
                         >
                         {monster.name}
                         </li>
@@ -552,7 +553,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
           placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+          className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
           required
           disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
         />
@@ -563,12 +564,12 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     placeholder="D&D Beyond URL (Optional)"
                     value={characterSheetUrl}
                     onChange={(e) => setCharacterSheetUrl(e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                 />
                 <button
                     type="button"
                     onClick={handleFetchCharacterSheet}
-                    className="p-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition duration-300 ease-in-out disabled:bg-gray-600 disabled:cursor-not-allowed flex-shrink-0"
+                    className="p-2 bg-stone-600 hover:bg-stone-500 text-white font-semibold rounded-md transition duration-300 ease-in-out disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                     disabled={isFetchingCharacterSheet || !characterSheetUrl.includes('dndbeyond.com/characters/')}
                     title="Fetch Character Data"
                 >
@@ -589,7 +590,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
             placeholder="Init"
             value={initiative}
             onChange={(e) => setInitiative(e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+            className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
             required
           />
            <input
@@ -597,7 +598,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
             placeholder="AC"
             value={ac}
             onChange={(e) => setAc(e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+            className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
             required
             disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
           />
@@ -606,7 +607,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
             placeholder="DEX Mod"
             value={dexterityModifier}
             onChange={(e) => setDexterityModifier(e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+            className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
             disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
           />
         </div>
@@ -617,7 +618,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     placeholder="Level"
                     value={level}
                     onChange={(e) => setLevel(e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                     required
                     disabled={isLoading || isFetchingCharacterSheet}
                 />
@@ -626,7 +627,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     placeholder="HP (Optional)"
                     value={hp}
                     onChange={(e) => setHp(e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                     disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
                 />
             </div>
@@ -638,7 +639,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     placeholder="Level (Optional)"
                     value={level}
                     onChange={(e) => setLevel(e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                     disabled={isLoading || isFetchingCharacterSheet}
                 />
                 <input
@@ -646,7 +647,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     placeholder="HP (Optional)"
                     value={hp}
                     onChange={(e) => setHp(e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                     disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
                 />
                  <input
@@ -654,7 +655,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     placeholder="CR (Optional)"
                     value={cr}
                     onChange={(e) => setCr(e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                     disabled={isLoading || isFetchingStatblock}
                 />
             </div>
@@ -666,7 +667,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     placeholder="HP"
                     value={hp}
                     onChange={(e) => setHp(e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                     required
                     disabled={isLoading || isFetchingStatblock}
                 />
@@ -675,7 +676,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     placeholder="CR"
                     value={cr}
                     onChange={(e) => setCr(e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                    className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                     required
                     disabled={isLoading || isFetchingStatblock}
                 />
@@ -690,13 +691,13 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                         placeholder="Statblock URL (Optional)"
                         value={statblockUrl}
                         onChange={(e) => setStatblockUrl(e.target.value)}
-                        className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                        className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                         disabled={isLoading || isFetchingStatblock}
                     />
                      <button
                         type="button"
                         onClick={handleFetchStatblock}
-                        className="p-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition duration-300 ease-in-out disabled:bg-gray-600 disabled:cursor-not-allowed flex-shrink-0"
+                        className="p-2 bg-stone-600 hover:bg-stone-500 text-white font-semibold rounded-md transition duration-300 ease-in-out disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                         disabled={isFetchingStatblock || !statblockUrl}
                         title="Fetch Statblock Data"
                     >
@@ -712,23 +713,23 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                      <button
                         type="button"
                         onClick={() => setIsEditingDescription(true)}
-                        className={`p-2 font-semibold rounded-md transition duration-300 ease-in-out flex-shrink-0 relative ${description ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-purple-600 hover:bg-purple-700 text-white'}`}
+                        className={`p-2 font-semibold rounded-md transition duration-300 ease-in-out flex-shrink-0 relative ${description ? 'bg-emerald-700 hover:bg-emerald-600 text-white' : 'bg-stone-600 hover:bg-stone-500 text-white'}`}
                         title="Add Custom Description"
                     >
                         <PencilSquareIcon className="w-5 h-5"/>
                         {description && (
-                            <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-yellow-400 ring-2 ring-gray-800"></span>
+                            <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-amber-400 ring-2 ring-stone-800"></span>
                         )}
                     </button>
                 </div>
                 <div className="space-y-3 pt-2">
                     <div className="flex items-center gap-4">
-                        <label className="flex items-center text-sm text-gray-300 select-none w-1/2">
+                        <label className="flex items-center text-sm text-stone-300 select-none w-1/2">
                             <input
                                 type="checkbox"
                                 checked={hasLegendaryResistances}
                                 onChange={(e) => setHasLegendaryResistances(e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                className="h-4 w-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500"
                             />
                             <span className="ml-2">Legendary Resistances</span>
                         </label>
@@ -737,18 +738,18 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                                 type="number"
                                 value={legendaryResistances}
                                 onChange={(e) => setLegendaryResistances(parseInt(e.target.value, 10))}
-                                className="w-20 bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-white text-sm"
+                                className="w-20 bg-stone-900/50 border border-stone-600 rounded-md px-2 py-1 text-white text-sm"
                                 min="1"
                             />
                         )}
                     </div>
                     <div className="flex items-center gap-4">
-                        <label className="flex items-center text-sm text-gray-300 select-none w-1/2">
+                        <label className="flex items-center text-sm text-stone-300 select-none w-1/2">
                             <input
                                 type="checkbox"
                                 checked={hasLegendaryActions}
                                 onChange={(e) => setHasLegendaryActions(e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                className="h-4 w-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500"
                             />
                             <span className="ml-2">Legendary Actions</span>
                         </label>
@@ -757,7 +758,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                                 type="number"
                                 value={legendaryActions}
                                 onChange={(e) => setLegendaryActions(parseInt(e.target.value, 10))}
-                                className="w-20 bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-white text-sm"
+                                className="w-20 bg-stone-900/50 border border-stone-600 rounded-md px-2 py-1 text-white text-sm"
                                 min="1"
                             />
                         )}
@@ -767,16 +768,16 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         )}
 
         {(combatantType === 'creature' || combatantType === 'dmpc') && (
-            <div className="space-y-3 pt-3 mt-3 border-t border-gray-700">
+            <div className="space-y-3 pt-3 mt-3 border-t border-stone-700">
                 <div className="flex items-center gap-2">
-                    <h4 className="text-md font-bold text-gray-300">Loot Inventory (Optional)</h4>
+                    <h4 className="text-md font-bold text-stone-300">Loot Inventory (Optional)</h4>
                     <a 
                         href="https://www.aidedd.org/dnd-filters/magic-items.php" 
                         target="_blank" 
                         rel="noopener noreferrer" 
                         title="Open Magic Item Database in new tab"
                         aria-label="Open Magic Item Database in new tab"
-                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                        className="text-sky-400 hover:text-sky-300 transition-colors"
                     >
                         <LinkIcon className="w-4 h-4" />
                     </a>
@@ -784,8 +785,8 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                 {inventory.length > 0 && (
                     <ul className="space-y-2 max-h-32 overflow-y-auto pr-2">
                         {inventory.map((item, index) => (
-                            <li key={index} className="flex items-center justify-between bg-gray-900/50 p-2 rounded-md text-sm">
-                                <span className="text-gray-300 truncate">{item.amount}x {item.name}</span>
+                            <li key={index} className="flex items-center justify-between bg-stone-900/50 p-2 rounded-md text-sm">
+                                <span className="text-stone-300 truncate">{item.amount}x {item.name}</span>
                                 <button type="button" onClick={() => handleRemoveItem(index)} className="text-red-400 hover:text-red-300 p-1 rounded-full"><TrashIcon className="w-4 h-4"/></button>
                             </li>
                         ))}
@@ -795,14 +796,14 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     <button
                         type="button"
                         onClick={() => handleInventoryModeChange('magic')}
-                        className={`px-4 py-2 text-sm font-medium text-white rounded-l-lg flex-grow transition-colors ${inventoryMode === 'magic' ? 'bg-purple-700' : 'bg-gray-700 hover:bg-gray-600'}`}
+                        className={`px-4 py-2 text-sm font-medium text-white rounded-l-lg flex-grow transition-colors ${inventoryMode === 'magic' ? 'bg-stone-600' : 'bg-stone-700 hover:bg-stone-600'}`}
                     >
                         Search Magic Item
                     </button>
                     <button
                         type="button"
                         onClick={() => handleInventoryModeChange('custom')}
-                        className={`px-4 py-2 text-sm font-medium text-white rounded-r-lg flex-grow transition-colors border-l border-gray-900/50 ${inventoryMode === 'custom' ? 'bg-purple-700' : 'bg-gray-700 hover:bg-gray-600'}`}
+                        className={`px-4 py-2 text-sm font-medium text-white rounded-r-lg flex-grow transition-colors border-l border-stone-900/50 ${inventoryMode === 'custom' ? 'bg-stone-600' : 'bg-stone-700 hover:bg-stone-600'}`}
                     >
                         Add Custom Item
                     </button>
@@ -810,7 +811,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
 
                 {inventoryMode === 'magic' ? (
                     <div className="flex items-start gap-2">
-                        <input type="number" placeholder="Qty" value={newItemAmount} onChange={e => setNewItemAmount(e.target.value)} min="1" className="bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition w-16 text-center"/>
+                        <input type="number" placeholder="Qty" value={newItemAmount} onChange={e => setNewItemAmount(e.target.value)} min="1" className="bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition w-16 text-center"/>
                         <div className="relative flex-grow" onBlur={() => setTimeout(() => setIsMagicItemListFocused(false), 150)}>
                             <input 
                                 type="text" 
@@ -818,13 +819,13 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                                 value={magicItemSearchQuery} 
                                 onChange={e => setMagicItemSearchQuery(e.target.value)}
                                 onFocus={() => setIsMagicItemListFocused(true)}
-                                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 pl-3 pr-10 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                                className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 pl-3 pr-10 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                             />
                              <div className="absolute inset-y-0 right-0 flex items-center pr-2">
                                 <button
                                     type="button"
                                     onClick={() => setIsMagicItemSearchModalOpen(true)}
-                                    className="p-1 text-gray-400 hover:text-white transition-colors"
+                                    className="p-1 text-stone-400 hover:text-white transition-colors"
                                     title="Advanced Magic Item Search"
                                     aria-label="Advanced Magic Item Search"
                                 >
@@ -832,25 +833,25 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                                 </button>
                             </div>
                             {isMagicItemListFocused && magicItemSearchResults.length > 0 && (
-                                <ul className="absolute z-20 w-full mt-1 bg-gray-700 border border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                <ul className="absolute z-20 w-full mt-1 bg-stone-700 border border-stone-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
                                 {magicItemSearchResults.map((item) => (
                                     <li
                                     key={item.index}
                                     onClick={() => handleSelectMagicItem(item)}
-                                    className="px-4 py-2 text-white hover:bg-red-700 cursor-pointer"
+                                    className="px-4 py-2 text-white hover:bg-amber-700 cursor-pointer"
                                     >
                                     {item.name}
                                     </li>
                                 ))}
                                 </ul>
                             )}
-                            {newItemName && <p className="text-xs text-gray-400 mt-1">Selected: <span className="font-semibold text-gray-300">{newItemName}</span></p>}
+                            {newItemName && <p className="text-xs text-stone-400 mt-1">Selected: <span className="font-semibold text-stone-300">{newItemName}</span></p>}
                         </div>
                         <button 
                             type="button" 
                             onClick={handleAddItem}
                             disabled={!newItemName.trim()}
-                            className="flex-shrink-0 p-2 mt-px bg-green-600 hover:bg-green-700 text-white font-bold rounded-md transition disabled:bg-gray-600 disabled:cursor-not-allowed"
+                            className="flex-shrink-0 p-2 mt-px bg-stone-600 hover:bg-stone-500 text-white font-bold rounded-md transition disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Add Item"
                         >
                             <PlusIcon className="w-5 h-5"/>
@@ -858,8 +859,8 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     </div>
                 ) : (
                     <div className="flex items-center gap-2">
-                        <input type="number" placeholder="Qty" value={newItemAmount} onChange={e => setNewItemAmount(e.target.value)} min="1" className="bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition w-16 text-center"/>
-                        <input type="text" placeholder="Item Name" value={newItemName} onChange={e => setNewItemName(e.target.value)} className="flex-1 min-w-0 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"/>
+                        <input type="number" placeholder="Qty" value={newItemAmount} onChange={e => setNewItemAmount(e.target.value)} min="1" className="bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition w-16 text-center"/>
+                        <input type="text" placeholder="Item Name" value={newItemName} onChange={e => setNewItemName(e.target.value)} className="flex-1 min-w-0 bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"/>
                         
                         {isUrlInputVisible && (
                             <input 
@@ -867,25 +868,25 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                                 placeholder="URL" 
                                 value={newItemUrl} 
                                 onChange={e => setNewItemUrl(e.target.value)} 
-                                className="flex-1 min-w-0 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                                className="flex-1 min-w-0 bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                                 autoFocus
                             />
                         )}
                         <button
                             type="button"
                             onClick={() => setIsEditingItemDescription(true)}
-                            className={`p-2 rounded-md transition flex-shrink-0 relative ${newItemDescription ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-600 hover:bg-gray-500 text-gray-300'}`}
+                            className={`p-2 rounded-md transition flex-shrink-0 relative ${newItemDescription ? 'bg-emerald-700 hover:bg-emerald-600 text-white' : 'bg-stone-600 hover:bg-stone-500 text-stone-300'}`}
                             title="Add Custom Description"
                         >
                             <PencilSquareIcon className="w-5 h-5"/>
                             {newItemDescription && (
-                               <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-yellow-400 ring-2 ring-gray-800"></span>
+                               <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-amber-400 ring-2 ring-stone-800"></span>
                             )}
                         </button>
                         <button
                             type="button"
                             onClick={() => setIsUrlInputVisible(prev => !prev)}
-                            className={`p-2 rounded-md transition flex-shrink-0 ${isUrlInputVisible ? 'bg-blue-600 text-white' : 'bg-gray-600 hover:bg-gray-500 text-gray-300'}`}
+                            className={`p-2 rounded-md transition flex-shrink-0 ${isUrlInputVisible ? 'bg-sky-700 text-white' : 'bg-stone-600 hover:bg-stone-500 text-stone-300'}`}
                             title={isUrlInputVisible ? "Hide URL Field" : "Add Item URL"}
                         >
                             <LinkIcon className="w-5 h-5"/>
@@ -895,7 +896,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                             type="button" 
                             onClick={handleAddItem}
                             disabled={!newItemName.trim()}
-                            className="flex-shrink-0 p-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-md transition disabled:bg-gray-600 disabled:cursor-not-allowed"
+                            className="flex-shrink-0 p-2 bg-stone-600 hover:bg-stone-500 text-white font-bold rounded-md transition disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Add Item"
                         >
                             <PlusIcon className="w-5 h-5"/>
@@ -907,7 +908,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
 
         <button
           type="submit"
-          className="w-full flex items-center justify-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-100"
+          className="w-full flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
           disabled={!name || !initiative || !ac || (combatantType === 'player' && !level) || (combatantType === 'creature' && (!hp || !cr)) || isLoading || isFetchingCharacterSheet || isFetchingStatblock}
         >
           {isLoading || isFetchingCharacterSheet || isFetchingStatblock ? (

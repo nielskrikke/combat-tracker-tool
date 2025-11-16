@@ -1,3 +1,5 @@
+
+
 import React, { useState } from 'react';
 import type { Participant } from '../types';
 import { HeartMinusIcon, HeartPlusIcon, TempHpIcon, MaxHpIcon, CloseIcon } from './icons';
@@ -15,9 +17,10 @@ const ActionInput: React.FC<{
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onConfirm: () => void;
     buttonText: string;
-    colorClass: string;
+    iconColorClass: string;
+    buttonColorClass: string;
     placeholder?: string;
-}> = ({ Icon, label, value, onChange, onConfirm, buttonText, colorClass, placeholder }) => {
+}> = ({ Icon, label, value, onChange, onConfirm, buttonText, iconColorClass, buttonColorClass, placeholder }) => {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             onConfirm();
@@ -25,9 +28,9 @@ const ActionInput: React.FC<{
     };
     
     return (
-        <div className="bg-gray-700/50 p-4 rounded-lg">
-            <label className="flex items-center gap-2 text-lg font-bold text-gray-200 mb-2">
-                <Icon className={`w-6 h-6 ${colorClass}`} />
+        <div className="bg-stone-700/50 p-4 rounded-lg">
+            <label className="flex items-center gap-2 text-lg font-bold text-stone-200 mb-2">
+                <Icon className={`w-6 h-6 ${iconColorClass}`} />
                 {label}
             </label>
             <div className="flex gap-2">
@@ -36,13 +39,13 @@ const ActionInput: React.FC<{
                     value={value}
                     onChange={onChange}
                     onKeyDown={handleKeyDown}
-                    className="w-full bg-gray-900/50 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-red-500 transition"
+                    className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 transition"
                     placeholder={placeholder || 'Amount'}
                     autoFocus={label === "Damage"} // Autofocus damage input
                 />
                 <button
                     onClick={onConfirm}
-                    className={`px-4 py-2 text-white font-semibold rounded-md transition duration-300 ease-in-out disabled:bg-gray-600 disabled:cursor-not-allowed flex-shrink-0 bg-${colorClass.split('-')[1]}-600 hover:bg-${colorClass.split('-')[1]}-700`}
+                    className={`px-4 py-2 text-white font-semibold rounded-md transition duration-300 ease-in-out disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${buttonColorClass}`}
                     disabled={!value}
                 >
                     {buttonText}
@@ -115,19 +118,19 @@ export const HealthManagerModal: React.FC<HealthManagerModalProps> = ({ particip
       onClick={onClose}
     >
       <div
-        className="bg-gray-800 rounded-lg shadow-xl p-6 border border-gray-600 w-full max-w-md m-4"
+        className="bg-stone-800 rounded-lg shadow-xl p-6 border border-stone-700 w-full max-w-md m-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-2xl font-medieval text-yellow-400">
+          <h3 className="text-2xl font-medieval text-white">
             Health Manager: {participant.name}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
+          <button onClick={onClose} className="text-stone-400 hover:text-white">
             <CloseIcon className="w-6 h-6"/>
           </button>
         </div>
         
-        <div className="text-center bg-gray-900/50 p-3 rounded-lg mb-4">
+        <div className="text-center bg-stone-900/50 p-3 rounded-lg mb-4">
             <span className="text-2xl font-bold text-white">
                 {participant.hp}
                 {(participant.tempHp ?? 0) > 0 && <span className="text-sky-400"> +{participant.tempHp}</span>}
@@ -143,7 +146,8 @@ export const HealthManagerModal: React.FC<HealthManagerModalProps> = ({ particip
                 onChange={(e) => setDamage(e.target.value)}
                 onConfirm={handleDamage}
                 buttonText="Apply"
-                colorClass="text-red-400"
+                iconColorClass="text-red-400"
+                buttonColorClass="bg-red-700 hover:bg-red-600"
             />
             <ActionInput 
                 Icon={HeartPlusIcon}
@@ -152,7 +156,8 @@ export const HealthManagerModal: React.FC<HealthManagerModalProps> = ({ particip
                 onChange={(e) => setHeal(e.target.value)}
                 onConfirm={handleHeal}
                 buttonText="Apply"
-                colorClass="text-green-400"
+                iconColorClass="text-emerald-400"
+                buttonColorClass="bg-emerald-700 hover:bg-emerald-600"
             />
              <ActionInput 
                 Icon={TempHpIcon}
@@ -161,7 +166,8 @@ export const HealthManagerModal: React.FC<HealthManagerModalProps> = ({ particip
                 onChange={(e) => setTempHp(e.target.value)}
                 onConfirm={handleSetTempHp}
                 buttonText="Set"
-                colorClass="text-sky-400"
+                iconColorClass="text-sky-400"
+                buttonColorClass="bg-sky-700 hover:bg-sky-600"
             />
              <ActionInput 
                 Icon={MaxHpIcon}
@@ -170,7 +176,8 @@ export const HealthManagerModal: React.FC<HealthManagerModalProps> = ({ particip
                 onChange={(e) => setMaxHp(e.target.value)}
                 onConfirm={handleSetMaxHp}
                 buttonText="Set"
-                colorClass="text-yellow-400"
+                iconColorClass="text-amber-400"
+                buttonColorClass="bg-amber-700 hover:bg-amber-600"
             />
         </div>
       </div>

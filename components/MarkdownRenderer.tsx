@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface MarkdownRendererProps {
@@ -10,11 +11,11 @@ const parseMarkdown = (text: string) => {
     let html = text
       // Headers
       .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-4 mb-2">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-5 mb-2 border-b border-gray-600 pb-1">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-6 mb-3 border-b-2 border-gray-500 pb-2">$1</h1>')
+      .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-5 mb-2 border-b border-stone-600 pb-1">$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-6 mb-3 border-b-2 border-stone-600 pb-2">$1</h1>')
       
       // Links
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline">$1</a>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:underline">$1</a>')
       
       // Bold and Italic (order matters)
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')

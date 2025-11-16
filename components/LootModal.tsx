@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import type { Participant, InventoryItem } from '../types';
 import { CloseIcon, LootIcon } from './icons';
@@ -21,39 +22,39 @@ export const LootModal: React.FC<LootModalProps> = ({ participant, onClose }) =>
         aria-labelledby="loot-modal-title"
       >
         <div
-          className="bg-gray-800 rounded-lg shadow-xl p-6 border border-gray-600 w-full max-w-md m-4"
+          className="bg-stone-800 rounded-lg shadow-xl p-6 border border-stone-700 w-full max-w-md m-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex justify-between items-center mb-4">
-            <h3 id="loot-modal-title" className="text-2xl font-medieval text-yellow-400 flex items-center gap-3">
+            <h3 id="loot-modal-title" className="text-2xl font-medieval text-white flex items-center gap-3">
               <LootIcon className="w-8 h-8" />
               Loot from {participant.name}
             </h3>
-            <button onClick={onClose} className="text-gray-400 text-3xl leading-none hover:text-white">&times;</button>
+            <button onClick={onClose} className="text-stone-400 text-3xl leading-none hover:text-white">&times;</button>
           </div>
           
-          <div className="my-4 border-t border-gray-700"></div>
+          <div className="my-4 border-t border-stone-700"></div>
 
           {(!participant.inventory || participant.inventory.length === 0) ? (
-            <p className="text-gray-400 text-center py-4">This combatant has no loot.</p>
+            <p className="text-stone-400 text-center py-4">This combatant has no loot.</p>
           ) : (
             <ul className="space-y-2 max-h-80 overflow-y-auto pr-2">
               {participant.inventory.map((item, index) => (
-                <li key={index} className="bg-gray-700 p-3 rounded-md flex justify-between items-center">
+                <li key={index} className="bg-stone-700 p-3 rounded-md flex justify-between items-center">
                   <span className="text-white">{item.amount}x {item.name}</span>
                   {item.url ? (
                     <a
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-400 hover:text-blue-300 hover:underline"
+                      className="text-sm text-sky-400 hover:text-sky-300 hover:underline"
                     >
                       Details
                     </a>
                   ) : item.description ? (
                      <button
                         onClick={() => setViewingItem(item)}
-                        className="text-sm text-blue-400 hover:text-blue-300 hover:underline"
+                        className="text-sm text-sky-400 hover:text-sky-300 hover:underline"
                     >
                         View Description
                     </button>
@@ -66,7 +67,7 @@ export const LootModal: React.FC<LootModalProps> = ({ participant, onClose }) =>
           <div className="mt-6 text-right">
               <button
                   onClick={onClose}
-                  className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-md transition duration-300"
+                  className="bg-stone-700 hover:bg-stone-600 text-white font-bold py-2 px-6 rounded-md transition duration-300"
               >
                   Close
               </button>

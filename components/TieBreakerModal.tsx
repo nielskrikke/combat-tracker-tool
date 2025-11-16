@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import type { Participant } from '../types';
 import { RefreshIcon, CheckIcon } from './icons';
@@ -65,23 +67,23 @@ export const TieBreakerModal: React.FC<TieBreakerModalProps> = ({ ties, onResolv
         onClick={onClose}
     >
         <div 
-            className="bg-gray-800 rounded-lg shadow-xl p-6 border border-gray-600 w-full max-w-lg m-4"
+            className="bg-stone-800 rounded-lg shadow-xl p-6 border border-stone-700 w-full max-w-lg m-4"
             onClick={(e) => e.stopPropagation()}
         >
             <div className="flex justify-between items-start mb-4">
                 <div>
-                    <h3 className="text-2xl font-medieval text-yellow-400">Initiative Tie-Breaker</h3>
-                    <p className="text-gray-400 mt-2 text-sm max-w-prose">
+                    <h3 className="text-2xl font-medieval text-white">Initiative Tie-Breaker</h3>
+                    <p className="text-stone-400 mt-2 text-sm max-w-prose">
                         Some combatants have the same initiative. Enter their Dexterity modifier to determine the correct turn order. Higher DEX mod goes first.
                     </p>
                 </div>
-                 <button onClick={onClose} className="text-gray-400 text-3xl leading-none hover:text-white">&times;</button>
+                 <button onClick={onClose} className="text-stone-400 text-3xl leading-none hover:text-white">&times;</button>
             </div>
 
-            <div className="space-y-4 max-h-80 overflow-y-auto pr-2 my-6 border-y border-gray-700 py-4">
+            <div className="space-y-4 max-h-80 overflow-y-auto pr-2 my-6 border-y border-stone-700 py-4">
                 {ties.map((group, index) => (
-                    <div key={index} className="bg-gray-900/50 p-4 rounded-lg">
-                        <h4 className="font-bold text-lg text-red-400 mb-3">Tie at Initiative: {group[0].initiative}</h4>
+                    <div key={index} className="bg-stone-900/50 p-4 rounded-lg">
+                        <h4 className="font-bold text-lg text-amber-500 mb-3">Tie at Initiative: {group[0].initiative}</h4>
                         <div className="space-y-3">
                             {group.map(p => (
                                 <div key={p.id} className="grid grid-cols-3 items-center gap-3">
@@ -92,14 +94,14 @@ export const TieBreakerModal: React.FC<TieBreakerModalProps> = ({ ties, onResolv
                                             placeholder="DEX Mod"
                                             value={participantDexMods[p.id] || ''}
                                             onChange={(e) => handleDexChange(p.id, e.target.value)}
-                                            className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-1.5 text-white text-center focus:ring-2 focus:ring-red-500"
+                                            className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-1.5 text-white text-center focus:ring-2 focus:ring-amber-500"
                                             required
                                         />
                                         {p.dexApiUrl && (
                                             <button 
                                                 onClick={() => handleFetchDex(p)} 
                                                 disabled={loadingDex.has(p.id)}
-                                                className="p-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition duration-300 ease-in-out disabled:bg-gray-600 disabled:cursor-not-allowed flex-shrink-0"
+                                                className="p-2 bg-stone-600 hover:bg-stone-500 text-white font-semibold rounded-md transition duration-300 ease-in-out disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                                                 title={`Fetch DEX for ${p.name}`}
                                             >
                                                 {loadingDex.has(p.id) ? (
@@ -122,7 +124,7 @@ export const TieBreakerModal: React.FC<TieBreakerModalProps> = ({ ties, onResolv
                  <button
                     onClick={handleResolve}
                     disabled={!allDexModsEntered}
-                    className="flex items-center justify-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <CheckIcon className="w-5 h-5 mr-2" />
                     Resolve Ties

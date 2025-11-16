@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import type { Participant } from '../types';
 import { CheckIcon, UploadIcon } from './icons';
@@ -45,18 +46,18 @@ export const RerollInitiativeModal: React.FC<RerollInitiativeModalProps> = ({ lo
             onClick={onClose}
         >
             <div 
-                className="bg-gray-800 rounded-lg shadow-xl p-6 border border-gray-600 w-full max-w-lg m-4 relative"
+                className="bg-stone-800 rounded-lg shadow-xl p-6 border border-stone-700 w-full max-w-lg m-4 relative"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h3 className="text-2xl font-medieval text-yellow-400">Update Initiative</h3>
-                        <p className="text-gray-400 mt-2 text-sm max-w-prose">Session loaded. You can update initiative values below and reset combat, or load the session exactly as it was saved.</p>
+                        <h3 className="text-2xl font-medieval text-white">Update Initiative</h3>
+                        <p className="text-stone-400 mt-2 text-sm max-w-prose">Session loaded. You can update initiative values below and reset combat, or load the session exactly as it was saved.</p>
                     </div>
-                     <button onClick={onClose} className="text-gray-400 text-3xl leading-none hover:text-white absolute top-3 right-4">&times;</button>
+                     <button onClick={onClose} className="text-stone-400 text-3xl leading-none hover:text-white absolute top-3 right-4">&times;</button>
                 </div>
 
-                <div className="space-y-3 max-h-60 overflow-y-auto pr-2 my-6 border-y border-gray-700 py-4">
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-2 my-6 border-y border-stone-700 py-4">
                     {loadedState.participants.map(p => (
                         <div key={p.id} className="flex items-center justify-between gap-4 px-2">
                             <span className="text-white font-medium truncate">{p.name}</span>
@@ -64,7 +65,7 @@ export const RerollInitiativeModal: React.FC<RerollInitiativeModalProps> = ({ lo
                                 type="number"
                                 value={initiatives[p.id] || ''}
                                 onChange={(e) => handleInitiativeChange(p.id, e.target.value)}
-                                className="w-24 bg-gray-700 border border-gray-600 rounded-md px-3 py-1 text-white text-center focus:ring-2 focus:ring-red-500"
+                                className="w-24 bg-stone-900/50 border border-stone-600 rounded-md px-3 py-1 text-white text-center focus:ring-2 focus:ring-amber-500"
                                 required
                             />
                         </div>
@@ -74,7 +75,7 @@ export const RerollInitiativeModal: React.FC<RerollInitiativeModalProps> = ({ lo
                 <div className="flex flex-col sm:flex-row gap-4 justify-end">
                     <button
                         onClick={() => onConfirmLoadAsIs(loadedState)}
-                        className="flex items-center justify-center bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+                        className="flex items-center justify-center bg-stone-700 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded-md transition duration-300"
                     >
                         <UploadIcon className="w-5 h-5 mr-2" />
                         Load Session As-Is
@@ -82,7 +83,7 @@ export const RerollInitiativeModal: React.FC<RerollInitiativeModalProps> = ({ lo
                      <button
                         onClick={handleUpdateAndReset}
                         disabled={!allInitiativesValid}
-                        className="flex items-center justify-center bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                        className="flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <CheckIcon className="w-5 h-5 mr-2" />
                         Update Initiatives & Reset

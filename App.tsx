@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { AddParticipantForm } from './components/AddParticipantForm';
 import { InitiativeList } from './components/InitiativeList';
@@ -470,15 +471,15 @@ const App: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         <header className="text-center mb-8">
-          <h1 className="text-5xl md:text-6xl font-medieval text-yellow-400 flex items-center justify-center gap-4">
+          <h1 className="text-5xl md:text-6xl font-medieval text-amber-500 flex items-center justify-center gap-4">
             <D20Icon className="w-12 h-12" />
             Encounter Tracker
             <D20Icon className="w-12 h-12" />
           </h1>
-          <p className="text-gray-400 mt-2">The battle awaits. May the dice be ever in your favor.</p>
+          <p className="text-stone-400 mt-2">The battle awaits. May the dice be ever in your favor.</p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

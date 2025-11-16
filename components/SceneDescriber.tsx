@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback } from 'react';
 import type { Participant } from '../types';
 import { generateSceneDescription } from '../services/geminiService';
@@ -35,12 +36,12 @@ export const SceneDescriber: React.FC<SceneDescriberProps> = ({ participants, cu
     }, [participants, currentIndex, round]);
 
     return (
-        <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
-            <h3 className="text-2xl font-medieval text-yellow-400 mb-4">Scene Describer (AI DM)</h3>
+        <div className="bg-stone-800/50 rounded-lg shadow-lg p-6 border border-stone-700">
+            <h3 className="text-2xl font-medieval text-white mb-4">Scene Describer (AI DM)</h3>
             <button
                 onClick={handleGenerate}
                 disabled={isLoading || currentIndex < 0}
-                className="w-full flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-100"
+                className="w-full flex items-center justify-center bg-stone-700 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
             >
                 {isLoading ? (
                     <>
@@ -59,8 +60,8 @@ export const SceneDescriber: React.FC<SceneDescriberProps> = ({ participants, cu
             </button>
             {error && <p className="text-red-400 text-sm mt-4 text-center">{error}</p>}
             {description && (
-                 <div className="mt-4 p-4 bg-gray-900/50 border border-gray-600 rounded-md max-h-60 overflow-y-auto">
-                    <p className="text-gray-300 whitespace-pre-wrap">{description}</p>
+                 <div className="mt-4 p-4 bg-stone-900/50 border border-stone-600 rounded-md max-h-60 overflow-y-auto">
+                    <p className="text-stone-300 whitespace-pre-wrap">{description}</p>
                  </div>
             )}
         </div>

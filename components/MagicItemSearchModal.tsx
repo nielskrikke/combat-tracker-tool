@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { MagicItemSummary } from '../types';
 import { CloseIcon, RefreshIcon } from './icons';
@@ -28,14 +30,14 @@ const MultiSelectDropdown: React.FC<{ options: string[], selected: string[], onC
     
     return (
         <div className="relative" ref={ref}>
-            <button type="button" onClick={() => setIsOpen(prev => !prev)} className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white text-left truncate">
+            <button type="button" onClick={() => setIsOpen(prev => !prev)} className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white text-left truncate">
                 {selected.length === 0 ? placeholder : `${selected.length} selected: ${selected.slice(0, 2).join(', ')}${selected.length > 2 ? '...' : ''}`}
             </button>
             {isOpen && (
-                <div className="absolute z-10 w-full mt-1 bg-gray-600 border border-gray-500 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-stone-600 border border-stone-500 rounded-md shadow-lg max-h-60 overflow-y-auto">
                     {options.map(option => (
-                        <label key={option} className="flex items-center px-4 py-2 text-white hover:bg-purple-700 cursor-pointer capitalize">
-                            <input type="checkbox" checked={selected.includes(option)} onChange={() => onChange(option)} className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" />
+                        <label key={option} className="flex items-center px-4 py-2 text-white hover:bg-amber-700 cursor-pointer capitalize">
+                            <input type="checkbox" checked={selected.includes(option)} onChange={() => onChange(option)} className="h-4 w-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500" />
                             <span className="ml-3">{option}</span>
                         </label>
                     ))}
@@ -101,51 +103,51 @@ export const MagicItemSearchModal: React.FC<MagicItemSearchModalProps> = ({ onCl
 
     return (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-600 w-full max-w-4xl h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <header className="flex justify-between items-center p-4 border-b border-gray-700">
-                    <h2 className="text-2xl font-medieval text-yellow-400">Magic Item Compendium</h2>
-                    <button onClick={onClose} className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-gray-700 transition" aria-label="Close modal">
+            <div className="bg-stone-800 rounded-lg shadow-xl border border-stone-700 w-full max-w-4xl h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                <header className="flex justify-between items-center p-4 border-b border-stone-700">
+                    <h2 className="text-2xl font-medieval text-white">Magic Item Compendium</h2>
+                    <button onClick={onClose} className="p-1 text-stone-400 hover:text-white rounded-full hover:bg-stone-700 transition" aria-label="Close modal">
                         <CloseIcon className="w-6 h-6" />
                     </button>
                 </header>
                 
                 <div className="flex-grow flex overflow-hidden">
                     {/* Filters Pane */}
-                    <aside className="w-1/3 xl:w-1/4 p-4 border-r border-gray-700 overflow-y-auto space-y-4">
-                        <h3 className="text-lg font-bold text-gray-200">Filters</h3>
+                    <aside className="w-1/3 xl:w-1/4 p-4 border-r border-stone-700 overflow-y-auto space-y-4">
+                        <h3 className="text-lg font-bold text-stone-200">Filters</h3>
                          <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Keyword Search</label>
+                            <label className="block text-sm font-medium text-stone-400 mb-1">Keyword Search</label>
                             <input
                                 type="text"
                                 placeholder="e.g. fire, healing..."
                                 value={filters.keyword}
                                 onChange={e => handleFilterChange('keyword', e.target.value)}
-                                className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-purple-500"
+                                className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Rarity</label>
+                            <label className="block text-sm font-medium text-stone-400 mb-1">Rarity</label>
                             <MultiSelectDropdown options={RARITIES} selected={filters.rarities} onChange={(v) => handleMultiSelectChange('rarities', v)} placeholder="Any Rarity" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Type</label>
+                            <label className="block text-sm font-medium text-stone-400 mb-1">Type</label>
                             <MultiSelectDropdown options={ITEM_TYPES} selected={filters.types} onChange={(v) => handleMultiSelectChange('types', v)} placeholder="Any Type" />
                         </div>
                         <label className="flex items-center text-white select-none">
-                            <input type="checkbox" checked={filters.requiresAttunement} onChange={e => handleFilterChange('requiresAttunement', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"/>
+                            <input type="checkbox" checked={filters.requiresAttunement} onChange={e => handleFilterChange('requiresAttunement', e.target.checked)} className="h-4 w-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500"/>
                             <span className="ml-2">Requires Attunement</span>
                         </label>
 
                         <div className="pt-2 flex flex-col gap-2">
-                            <button onClick={applyFilters} className="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-md transition">Apply Filters</button>
-                            <button onClick={resetFilters} className="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md transition flex items-center justify-center gap-2"><RefreshIcon className="w-4 h-4"/>Reset</button>
+                            <button onClick={applyFilters} className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-md transition">Apply Filters</button>
+                            <button onClick={resetFilters} className="w-full bg-stone-700 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded-md transition flex items-center justify-center gap-2"><RefreshIcon className="w-4 h-4"/>Reset</button>
                         </div>
                     </aside>
 
                     {/* Results Pane */}
                     <main className="flex-grow p-4 overflow-y-auto">
                         {isLoading ? (
-                            <div className="flex flex-col items-center justify-center h-full text-center text-gray-400">
+                            <div className="flex flex-col items-center justify-center h-full text-center text-stone-400">
                                 <svg className="animate-spin h-10 w-10 text-white mb-4" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -155,32 +157,32 @@ export const MagicItemSearchModal: React.FC<MagicItemSearchModalProps> = ({ onCl
                             </div>
                         ) : (
                             <>
-                                <p className="text-gray-400 text-sm mb-2">{filteredItems.length} of {allMagicItems.length} items shown</p>
+                                <p className="text-stone-400 text-sm mb-2">{filteredItems.length} of {allMagicItems.length} items shown</p>
                                 {filteredItems.length > 0 ? (
                                 <ul className="space-y-2">
                                     {filteredItems.map(item => (
                                         <li key={item.index}>
-                                            <button onClick={() => onSelect(item.url)} className="w-full text-left p-3 bg-gray-700/50 hover:bg-gray-700 rounded-md transition group">
+                                            <button onClick={() => onSelect(item.url)} className="w-full text-left p-3 bg-stone-900/50 hover:bg-stone-700/80 rounded-md transition group">
                                                 <div className="flex justify-between items-center">
-                                                    <p className="font-bold text-white group-hover:text-yellow-400 transition">{item.name}</p>
+                                                    <p className="font-bold text-white group-hover:text-amber-400 transition">{item.name}</p>
                                                     <p className={`text-sm font-semibold ${
                                                         {
-                                                            "Uncommon": "text-green-400",
-                                                            "Rare": "text-blue-400",
-                                                            "Very Rare": "text-purple-400",
+                                                            "Uncommon": "text-emerald-400",
+                                                            "Rare": "text-sky-400",
+                                                            "Very Rare": "text-violet-400",
                                                             "Legendary": "text-orange-400",
                                                             "Artifact": "text-red-500",
-                                                            "Common": "text-gray-300",
-                                                        }[item.rarity.name] || 'text-gray-300'
+                                                            "Common": "text-stone-300",
+                                                        }[item.rarity.name] || 'text-stone-300'
                                                     }`}>{item.rarity.name}</p>
                                                 </div>
-                                                <p className="text-xs text-gray-400 capitalize">{item.equipment_category.name}</p>
+                                                <p className="text-xs text-stone-400 capitalize">{item.equipment_category.name}</p>
                                             </button>
                                         </li>
                                     ))}
                                 </ul>
                                 ) : (
-                                    <div className="text-center py-10 text-gray-500">
+                                    <div className="text-center py-10 text-stone-500">
                                         <p className="text-lg">No items match your criteria.</p>
                                         <p className="mt-2">Try adjusting your filters.</p>
                                     </div>

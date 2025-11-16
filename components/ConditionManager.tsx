@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import type { Participant, Condition } from '../types';
 import { PlusCircleIcon, TrashIcon } from './icons';
@@ -94,26 +95,26 @@ export const ConditionManager: React.FC<ConditionManagerProps> = ({
         onClick={onClose}
     >
       <div 
-        className="bg-gray-800 rounded-lg shadow-xl p-6 border border-gray-600 w-full max-w-md m-4"
+        className="bg-stone-800 rounded-lg shadow-xl p-6 border border-stone-700 w-full max-w-md m-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
-            <h3 className="text-2xl font-medieval text-yellow-400">
+            <h3 className="text-2xl font-medieval text-white">
                 Conditions for {participant.name}
             </h3>
-            <button onClick={onClose} className="text-gray-400 text-3xl leading-none hover:text-white">&times;</button>
+            <button onClick={onClose} className="text-stone-400 text-3xl leading-none hover:text-white">&times;</button>
         </div>
 
         {/* Current Conditions */}
         <div className="mb-6 max-h-40 overflow-y-auto pr-2">
-            <h4 className="text-lg font-bold text-gray-300 mb-2">Active Conditions</h4>
+            <h4 className="text-lg font-bold text-stone-300 mb-2">Active Conditions</h4>
             {participant.conditions.length > 0 ? (
                 <ul className="space-y-2">
                     {participant.conditions.map(c => (
-                        <li key={c.id} className="flex justify-between items-center bg-gray-700 p-2 rounded-md">
+                        <li key={c.id} className="flex justify-between items-center bg-stone-700 p-2 rounded-md">
                             <span>
                                 {c.name}
-                                <span className="text-gray-400 ml-2">
+                                <span className="text-stone-400 ml-2">
                                     ({c.duration === Infinity ? 'Permanent' : `${c.duration} rounds left`})
                                 </span>
                             </span>
@@ -124,21 +125,21 @@ export const ConditionManager: React.FC<ConditionManagerProps> = ({
                     ))}
                 </ul>
             ) : (
-                <p className="text-gray-500">No active conditions.</p>
+                <p className="text-stone-500">No active conditions.</p>
             )}
         </div>
 
         {/* Add Condition Form */}
         <div>
-            <h4 className="text-lg font-bold text-gray-300 mb-3">Add Status / Condition</h4>
+            <h4 className="text-lg font-bold text-stone-300 mb-3">Add Status / Condition</h4>
             
-            <div className="flex items-center bg-gray-700 p-3 rounded-md mb-4">
+            <div className="flex items-center bg-stone-700 p-3 rounded-md mb-4">
                 <input
                     id="concentration-status"
                     type="checkbox"
                     checked={isConcentrating}
                     onChange={handleConcentrationToggle}
-                    className="h-5 w-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400"
+                    className="h-5 w-5 rounded border-stone-300 text-amber-500 focus:ring-amber-500"
                 />
                 <label htmlFor="concentration-status" className="ml-3 block text-md font-medium text-white">
                     Is Concentrating?
@@ -147,14 +148,14 @@ export const ConditionManager: React.FC<ConditionManagerProps> = ({
 
             <form onSubmit={handleAdd} className="space-y-4">
                 <div>
-                    <label htmlFor="condition-name" className="block text-sm font-medium text-gray-400 mb-1">Condition Name</label>
+                    <label htmlFor="condition-name" className="block text-sm font-medium text-stone-400 mb-1">Condition Name</label>
                     <input
                         id="condition-name"
                         type="text"
                         list="conditions-list"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500"
+                        className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500"
                         placeholder="e.g. Blessed"
                     />
                     <datalist id="conditions-list">
@@ -167,14 +168,14 @@ export const ConditionManager: React.FC<ConditionManagerProps> = ({
                 </div>
                 <div className="grid grid-cols-2 gap-4 items-end">
                     <div>
-                        <label htmlFor="condition-duration" className="block text-sm font-medium text-gray-400 mb-1">Duration (rounds)</label>
+                        <label htmlFor="condition-duration" className="block text-sm font-medium text-stone-400 mb-1">Duration (rounds)</label>
                         <input
                             id="condition-duration"
                             type="number"
                             min="1"
                             value={duration}
                             onChange={(e) => setDuration(e.target.value)}
-                            className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-600"
+                            className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 disabled:bg-stone-600"
                             disabled={isPermanent}
                         />
                     </div>
@@ -184,15 +185,15 @@ export const ConditionManager: React.FC<ConditionManagerProps> = ({
                             type="checkbox"
                             checked={isPermanent}
                             onChange={(e) => setIsPermanent(e.target.checked)}
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            className="h-4 w-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500"
                         />
-                        <label htmlFor="condition-permanent" className="ml-2 block text-sm text-gray-300">Permanent</label>
+                        <label htmlFor="condition-permanent" className="ml-2 block text-sm text-stone-300">Permanent</label>
                     </div>
                 </div>
 
                 <button
                     type="submit"
-                    className="w-full flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!name}
                 >
                     <PlusCircleIcon className="w-5 h-5 mr-2" />

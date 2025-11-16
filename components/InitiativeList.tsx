@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ParticipantItem } from './ParticipantItem';
 import type { Participant, Condition } from '../types';
@@ -24,8 +25,8 @@ export const InitiativeList: React.FC<InitiativeListProps> = ({
   onLoot,
 }) => {
   return (
-    <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
-       <div className="grid grid-cols-12 gap-4 px-4 py-2 text-gray-400 font-bold uppercase text-sm border-b-2 border-gray-700 mb-2">
+    <div className="bg-stone-800/50 rounded-lg shadow-lg p-6 border border-stone-700">
+       <div className="grid grid-cols-12 gap-4 px-4 py-2 text-stone-400 font-bold uppercase text-sm border-b-2 border-stone-700 mb-2">
             <div className="col-span-1">Init</div>
             <div className="col-span-4">Name</div>
             <div className="col-span-3">HP</div>
@@ -50,7 +51,7 @@ export const InitiativeList: React.FC<InitiativeListProps> = ({
           ))}
         </ul>
       ) : (
-        <div className="text-center py-10 text-gray-500">
+        <div className="text-center py-10 text-stone-500">
           <p className="text-lg">No combatants have joined the fray.</p>
           <p className="mt-2">Use the form to add characters and monsters.</p>
         </div>

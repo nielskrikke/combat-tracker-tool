@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { CloseIcon } from './icons';
 
@@ -17,16 +18,16 @@ export const StatblockModal: React.FC<StatblockModalProps> = ({ url, title, onCl
       aria-labelledby="statblock-modal-title"
     >
       <div
-        className="bg-gray-800 rounded-lg shadow-xl border border-gray-600 w-full max-w-4xl h-[90vh] flex flex-col"
+        className="bg-stone-800 rounded-lg shadow-xl border border-stone-700 w-full max-w-4xl h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex justify-between items-center p-4 border-b border-gray-700">
-          <h2 id="statblock-modal-title" className="text-xl font-medieval text-yellow-400">
+        <header className="flex justify-between items-center p-4 border-b border-stone-700">
+          <h2 id="statblock-modal-title" className="text-xl font-medieval text-white">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-gray-700 transition"
+            className="p-1 text-stone-400 hover:text-white rounded-full hover:bg-stone-700 transition"
             aria-label="Close modal"
           >
             <CloseIcon className="w-6 h-6" />

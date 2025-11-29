@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Participant, InventoryItem } from '../types';
-import { PlusCircleIcon, RefreshIcon, TrashIcon, PlusIcon, LinkIcon, FilterIcon, PencilSquareIcon } from './icons';
+import { PlusCircleIcon, RefreshIcon, TrashIcon, PlusIcon, LinkIcon, FilterIcon, PencilSquareIcon, SquaresPlusIcon } from './icons';
 import { CreatureSearchModal } from './CreatureSearchModal';
 import { MagicItemSearchModal } from './MagicItemSearchModal';
 import { DescriptionEditorModal } from './DescriptionEditorModal';
@@ -9,7 +9,7 @@ import { useMonsters } from './MonsterProvider';
 import { useMagicItems } from './MagicItemProvider';
 
 interface AddParticipantFormProps {
-  onAdd: (participant: Omit<Participant, 'id'>) => void;
+  onAdd: (participant: Omit<Participant, 'id'> | Omit<Participant, 'id'>[]) => void;
 }
 
 interface ItemIndex {
@@ -17,6 +17,30 @@ interface ItemIndex {
     name: string;
     url: string;
 }
+
+const getRandomColor = () => {
+  const colors = [
+    'border-red-500 bg-red-900/20',
+    'border-orange-500 bg-orange-900/20',
+    'border-amber-500 bg-amber-900/20',
+    'border-yellow-500 bg-yellow-900/20',
+    'border-lime-500 bg-lime-900/20',
+    'border-green-500 bg-green-900/20',
+    'border-emerald-500 bg-emerald-900/20',
+    'border-teal-500 bg-teal-900/20',
+    'border-cyan-500 bg-cyan-900/20',
+    'border-sky-500 bg-sky-900/20',
+    'border-blue-500 bg-blue-900/20',
+    'border-indigo-500 bg-indigo-900/20',
+    'border-violet-500 bg-violet-900/20',
+    'border-purple-500 bg-purple-900/20',
+    'border-fuchsia-500 bg-fuchsia-900/20',
+    'border-pink-500 bg-pink-900/20',
+    'border-rose-500 bg-rose-900/20',
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
+
 
 export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd }) => {
   const [combatantType, setCombatantType] = useState<'player' | 'creature' | 'dmpc'>('player');
@@ -68,6 +92,12 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
   const [isFetchingStatblock, setIsFetchingStatblock] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
+  // Add Multiple State
+  const [isAddMultipleModalOpen, setIsAddMultipleModalOpen] = useState(false);
+  const [multipleCount, setMultipleCount] = useState('2');
+  const [isInitiativeGroup, setIsInitiativeGroup] = useState(false);
+  const [isSharedHealth, setIsSharedHealth] = useState(false);
+
   const allMonstersForSearch = useMemo(() => {
     return allMonstersFromContext.map(m => ({ index: m.index, name: m.name, url: m.url }));
   }, [allMonstersFromContext]);
@@ -99,6 +129,10 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
   }, [magicItemSearchQuery, allMagicItemsForSearch]);
 
   const handleFetchCharacterSheet = async () => {
+    if (!characterSheetUrl) {
+        alert("Please enter a URL.");
+        return;
+    }
     const match = characterSheetUrl.match(/dndbeyond\.com\/characters\/(\d+)/);
     if (!match) {
         alert("Please enter a valid D&D Beyond character sheet URL.");
@@ -207,17 +241,12 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         }
 
         // --- Dexterity Parsing ---
-        // This is tricky because formatting varies. We'll try a few methods.
         let dexMod: string | null = null;
-        
-        // Method 1: Look for "Dexterity 18 (+4)" format.
         let match = text.match(/Dexterity\s+\d+\s*\(([+-]?\d+)\)/i);
         if (match && match[1]) {
             dexMod = match[1];
         }
 
-        // Method 2: Collapse whitespace and look for the standard stat block.
-        // This is more robust against newline variations found on sites like dandwiki.
         if (!dexMod) {
             const flatText = text.replace(/\s+/g, ' ');
             const headerMatch = flatText.match(/STR\s+DEX\s+CON\s+INT\s+WIS\s+CHA\s+/i);
@@ -300,6 +329,11 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
     setIsUrlInputVisible(false);
     setInventoryMode('magic');
     setMagicItemSearchQuery('');
+    
+    // Multiple Reset
+    setMultipleCount('2');
+    setIsInitiativeGroup(false);
+    setIsSharedHealth(false);
   };
 
   const handleSelectMonster = async (monsterUrl: string) => {
@@ -365,16 +399,12 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
     setIsSearchModalOpen(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const getCommonParticipantData = () => {
     const isCreature = combatantType === 'creature';
     const isPlayerOrDMPC = combatantType === 'player' || combatantType === 'dmpc';
-
-    // More robust validation mirroring the `disabled` prop logic
-    if (name && initiative && ac && (combatantType !== 'player' || !!level) && (combatantType !== 'creature' || (!!hp && !!cr))) {
-      const hpValue = hp ? parseInt(hp, 10) : undefined;
-      let crValue: number | undefined;
-      if (cr) {
+    const hpValue = hp ? parseInt(hp, 10) : undefined;
+    let crValue: number | undefined;
+    if (cr) {
         try {
             // eslint-disable-next-line no-eval
             const evaluatedCr = eval(cr.toString());
@@ -384,10 +414,9 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         } catch (err) {
             console.warn("Could not parse CR value:", cr);
         }
-      }
-      
-      onAdd({
-        name,
+    }
+
+    return {
         initiative: parseInt(initiative, 10),
         hp: hpValue,
         maxHp: hpValue,
@@ -411,9 +440,72 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
         legendaryActions: (combatantType !== 'player' && hasLegendaryActions) ? legendaryActions : undefined,
         legendaryActionsUsed: (combatantType !== 'player' && hasLegendaryActions) ? 0 : undefined,
         inventory: (combatantType === 'creature' || combatantType === 'dmpc') ? inventory : undefined,
-      });
+    };
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !initiative || !ac) return; // Basic validation
+    
+    const baseData = getCommonParticipantData();
+    onAdd({ ...baseData, name });
+    resetForm();
+  };
+
+  const handleAddMultipleSubmit = () => {
+      if (!name || !initiative || !ac) return;
+      const count = parseInt(multipleCount, 10);
+      if (count < 1) return;
+
+      const baseData = getCommonParticipantData();
+      
+      // Shared Health Logic: Create ONE participant representing a mob
+      // Only applicable if grouped
+      if (isInitiativeGroup && isSharedHealth) {
+         const hpVal = baseData.hp || 0;
+         const totalHp = hpVal * count;
+         const sharedName = `${name} (x${count})`;
+         
+         onAdd({
+             ...baseData,
+             name: sharedName,
+             hp: totalHp,
+             maxHp: totalHp,
+             individualMaxHp: hpVal > 0 ? hpVal : undefined,
+             group: {
+                 id: `${Date.now()}-group`,
+                 name: sharedName,
+                 color: getRandomColor()
+             }
+         });
+      } else {
+         // Create N participants
+         const groupId = isInitiativeGroup ? `${Date.now()}-group` : undefined;
+         const groupColor = isInitiativeGroup ? getRandomColor() : undefined;
+         const groupName = isInitiativeGroup ? `${name}s` : undefined;
+         
+         const listToAdd: Omit<Participant, 'id'>[] = [];
+         
+         for (let i = 0; i < count; i++) {
+             listToAdd.push({
+                 ...baseData,
+                 name: `${name} ${i + 1}`,
+                 // conditionally add group property only if isInitiativeGroup is true
+                 ...(isInitiativeGroup ? {
+                    group: {
+                        id: groupId!,
+                        name: groupName!,
+                        color: groupColor!
+                    }
+                 } : {})
+             });
+         }
+         
+         onAdd(listToAdd);
+      }
+      
+      setIsAddMultipleModalOpen(false);
       resetForm();
-    }
   };
 
   const handleAddItem = () => {
@@ -468,12 +560,16 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
     resetForm();
     setCombatantType(type);
   }
+  
+  const isValid = name && initiative && ac && (combatantType !== 'player' || !!level) && (combatantType !== 'creature' || (!!hp && !!cr));
+  const isBusy = isLoading || isFetchingCharacterSheet || isFetchingStatblock;
 
   return (
     <>
     <div className="bg-stone-800/50 rounded-lg shadow-lg p-6 border border-stone-700">
       <h3 className="text-2xl font-medieval text-white mb-4">Add Combatant</h3>
       
+      {/* Type Toggle */}
       <div className="flex rounded-md shadow-sm mb-4" role="group">
         <button
           type="button"
@@ -502,6 +598,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Search Input for Creatures */}
         {(combatantType === 'creature' || combatantType === 'dmpc') && (
             <div className="relative" onBlur={() => setTimeout(() => setIsListFocused(false), 150)}>
                  <input
@@ -548,6 +645,8 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                 )}
             </div>
         )}
+        
+        {/* Name Input */}
         <input
           type="text"
           placeholder="Name"
@@ -555,8 +654,10 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
           onChange={(e) => setName(e.target.value)}
           className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
           required
-          disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
+          disabled={isBusy}
         />
+        
+         {/* D&D Beyond Import */}
          {(combatantType === 'player' || combatantType === 'dmpc') && (
             <div className="flex items-center gap-2">
                 <input
@@ -584,6 +685,8 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                 </button>
             </div>
         )}
+        
+        {/* Core Stats */}
         <div className="grid grid-cols-3 gap-4">
           <input
             type="number"
@@ -600,7 +703,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
             onChange={(e) => setAc(e.target.value)}
             className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
             required
-            disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
+            disabled={isBusy}
           />
           <input
             type="number"
@@ -608,9 +711,11 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
             value={dexterityModifier}
             onChange={(e) => setDexterityModifier(e.target.value)}
             className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
-            disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
+            disabled={isBusy}
           />
         </div>
+        
+        {/* Type Specific Stats */}
         {combatantType === 'player' && (
             <div className="grid grid-cols-2 gap-4">
                 <input
@@ -628,7 +733,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     value={hp}
                     onChange={(e) => setHp(e.target.value)}
                     className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
-                    disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
+                    disabled={isBusy}
                 />
             </div>
         )}
@@ -648,7 +753,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     value={hp}
                     onChange={(e) => setHp(e.target.value)}
                     className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
-                    disabled={isLoading || isFetchingCharacterSheet || isFetchingStatblock}
+                    disabled={isBusy}
                 />
                  <input
                     type="text"
@@ -669,7 +774,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     onChange={(e) => setHp(e.target.value)}
                     className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                     required
-                    disabled={isLoading || isFetchingStatblock}
+                    disabled={isBusy}
                 />
                 <input
                     type="text"
@@ -678,7 +783,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                     onChange={(e) => setCr(e.target.value)}
                     className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                     required
-                    disabled={isLoading || isFetchingStatblock}
+                    disabled={isBusy}
                 />
             </div>
         )}
@@ -692,7 +797,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                         value={statblockUrl}
                         onChange={(e) => setStatblockUrl(e.target.value)}
                         className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
-                        disabled={isLoading || isFetchingStatblock}
+                        disabled={isBusy}
                     />
                      <button
                         type="button"
@@ -722,8 +827,9 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                         )}
                     </button>
                 </div>
+                {/* Legendary options */}
                 <div className="space-y-3 pt-2">
-                    <div className="flex items-center gap-4">
+                     <div className="flex items-center gap-4">
                         <label className="flex items-center text-sm text-stone-300 select-none w-1/2">
                             <input
                                 type="checkbox"
@@ -782,6 +888,7 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
                         <LinkIcon className="w-4 h-4" />
                     </a>
                 </div>
+                 {/* Inventory List */}
                 {inventory.length > 0 && (
                     <ul className="space-y-2 max-h-32 overflow-y-auto pr-2">
                         {inventory.map((item, index) => (
@@ -906,23 +1013,100 @@ export const AddParticipantForm: React.FC<AddParticipantFormProps> = ({ onAdd })
             </div>
         )}
 
-        <button
-          type="submit"
-          className="w-full flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
-          disabled={!name || !initiative || !ac || (combatantType === 'player' && !level) || (combatantType === 'creature' && (!hp || !cr)) || isLoading || isFetchingCharacterSheet || isFetchingStatblock}
-        >
-          {isLoading || isFetchingCharacterSheet || isFetchingStatblock ? (
-            <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          ) : (
-            <PlusCircleIcon className="w-5 h-5 mr-2" />
-          )}
-          {isLoading ? 'Loading...' : (isFetchingCharacterSheet || isFetchingStatblock) ? 'Fetching...' : 'Add to Order'}
-        </button>
+        <div className="flex gap-2">
+            <button
+            type="submit"
+            className="flex-grow flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+            disabled={!isValid || isBusy}
+            >
+            {isBusy ? (
+                <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            ) : (
+                <PlusCircleIcon className="w-5 h-5 mr-2" />
+            )}
+            {isLoading ? 'Loading...' : (isFetchingCharacterSheet || isFetchingStatblock) ? 'Fetching...' : 'Add One'}
+            </button>
+            
+            <button
+                type="button"
+                onClick={() => setIsAddMultipleModalOpen(true)}
+                className="flex items-center justify-center bg-stone-600 hover:bg-stone-500 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+                disabled={!isValid || isBusy}
+                title="Add Multiple / Groups"
+            >
+                <SquaresPlusIcon className="w-5 h-5" />
+            </button>
+        </div>
       </form>
     </div>
+    
+    {isAddMultipleModalOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setIsAddMultipleModalOpen(false)}>
+            <div className="bg-stone-800 rounded-lg shadow-xl p-6 border border-stone-700 w-full max-w-sm m-4" onClick={e => e.stopPropagation()}>
+                <h3 className="text-xl font-medieval text-white mb-4">Add Multiple Combatants</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-stone-400 mb-1">Quantity</label>
+                        <input
+                            type="number"
+                            min="2"
+                            value={multipleCount}
+                            onChange={e => setMultipleCount(e.target.value)}
+                            className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500"
+                        />
+                    </div>
+                    
+                    <div className="bg-stone-900/50 p-3 rounded-md space-y-3">
+                         <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={isInitiativeGroup}
+                                onChange={e => setIsInitiativeGroup(e.target.checked)}
+                                className="h-5 w-5 rounded border-stone-300 text-amber-600 focus:ring-amber-500"
+                            />
+                            <div>
+                                <span className="text-white block">Initiative Group</span>
+                                <span className="text-xs text-stone-400">Visually group them in the list.</span>
+                            </div>
+                        </label>
+                        
+                        <label className={`flex items-center gap-3 cursor-pointer ${!isInitiativeGroup ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                            <input
+                                type="checkbox"
+                                checked={isSharedHealth}
+                                onChange={e => setIsSharedHealth(e.target.checked)}
+                                disabled={!isInitiativeGroup} // Usually shared health implies they act as a group, but technically separate. We'll simplify UI.
+                                className="h-5 w-5 rounded border-stone-300 text-amber-600 focus:ring-amber-500"
+                            />
+                            <div>
+                                <span className="text-white block">Shared Health Pool</span>
+                                <span className="text-xs text-stone-400">Creates a single "Mob" unit with combined HP.</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-2">
+                        <button
+                            onClick={() => setIsAddMultipleModalOpen(false)}
+                            className="px-4 py-2 bg-stone-700 hover:bg-stone-600 text-white rounded-md transition"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleAddMultipleSubmit}
+                            className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-md transition"
+                        >
+                            Add {multipleCount}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )}
+
     {isEditingDescription && (
         <DescriptionEditorModal
             initialDescription={description}

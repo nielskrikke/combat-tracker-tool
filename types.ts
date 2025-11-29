@@ -1,3 +1,4 @@
+
 export interface Condition {
   id: string;
   name: string;
@@ -11,6 +12,12 @@ export interface InventoryItem {
   description?: string;
 }
 
+export interface Group {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface Participant {
   id:string;
   name: string;
@@ -18,6 +25,7 @@ export interface Participant {
   hp?: number;
   maxHp?: number;
   tempHp?: number;
+  individualMaxHp?: number; // For shared health pools to track count
   ac: number;
   conditions: Condition[];
   type: 'player' | 'creature' | 'dmpc';
@@ -37,6 +45,7 @@ export interface Participant {
   inventory?: InventoryItem[];
   dexterityModifier?: number;
   dexApiUrl?: string; // To fetch stats for creatures from API
+  group?: Group;
 }
 
 export interface LogEntry {

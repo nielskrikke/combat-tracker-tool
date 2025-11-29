@@ -22,6 +22,29 @@ interface SavedState {
   combatLog: LogEntry[];
 }
 
+const getRandomColor = () => {
+    const colors = [
+      'border-red-500 bg-red-900/20',
+      'border-orange-500 bg-orange-900/20',
+      'border-amber-500 bg-amber-900/20',
+      'border-yellow-500 bg-yellow-900/20',
+      'border-lime-500 bg-lime-900/20',
+      'border-green-500 bg-green-900/20',
+      'border-emerald-500 bg-emerald-900/20',
+      'border-teal-500 bg-teal-900/20',
+      'border-cyan-500 bg-cyan-900/20',
+      'border-sky-500 bg-sky-900/20',
+      'border-blue-500 bg-blue-900/20',
+      'border-indigo-500 bg-indigo-900/20',
+      'border-violet-500 bg-violet-900/20',
+      'border-purple-500 bg-purple-900/20',
+      'border-fuchsia-500 bg-fuchsia-900/20',
+      'border-pink-500 bg-pink-900/20',
+      'border-rose-500 bg-rose-900/20',
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+
 const App: React.FC = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
@@ -112,9 +135,15 @@ const App: React.FC = () => {
     return tiesFound;
   }, []);
 
-  const handleAddParticipant = (participant: Omit<Participant, 'id'>) => {
-    const newParticipant = { ...participant, id: Date.now().toString() };
-    const newParticipants = [...participants, newParticipant];
+  const handleAddParticipant = (participantOrList: Omit<Participant, 'id'> | Omit<Participant, 'id'>[]) => {
+    const inputList = Array.isArray(participantOrList) ? participantOrList : [participantOrList];
+    
+    const newItems = inputList.map((p, i) => ({
+        ...p,
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${i}`
+    }));
+    
+    const newParticipants = [...participants, ...newItems];
     
     if (currentIndex > -1) { // If combat is active, check for ties immediately
       const tiesToResolve = findTies(newParticipants);
@@ -189,9 +218,33 @@ const App: React.FC = () => {
     if (currentIndex > -1 && updates.initiative !== undefined && sortedParticipants[currentIndex]) {
         setParticipantToFind(sortedParticipants[currentIndex].id);
     }
-    setParticipants(prev =>
-        prev.map(p => (p.id === id ? { ...p, ...updates } : p))
-    );
+
+    // Logic for Mob Count Update (Shared Health)
+    let finalUpdates = { ...updates };
+    if (updates.hp !== undefined && participant.individualMaxHp && participant.individualMaxHp > 0) {
+        const newHp = Math.max(0, updates.hp);
+        const count = Math.ceil(newHp / participant.individualMaxHp);
+        // Look for (xN) pattern to replace
+        if (/\(x\d+\)/.test(participant.name)) {
+             finalUpdates.name = participant.name.replace(/\(x\d+\)/, `(x${count})`);
+        }
+    }
+
+    setParticipants(prev => {
+        // Check if we are updating initiative for a grouped participant
+        if (finalUpdates.initiative !== undefined && participant.group) {
+            // Update all participants in the same group
+            return prev.map(p => {
+                if (p.group && p.group.id === participant.group!.id) {
+                    return { ...p, ...finalUpdates };
+                }
+                return p;
+            });
+        }
+        
+        // Otherwise just update the single participant
+        return prev.map(p => (p.id === id ? { ...p, ...finalUpdates } : p));
+    });
   }, [participants, currentIndex, sortedParticipants, addLogEntry]);
 
   const handleStart = () => {
@@ -469,6 +522,40 @@ const App: React.FC = () => {
     }
   };
 
+  // Grouping Logic
+  const handleGroupParticipants = (ids: string[]) => {
+      if (ids.length < 2) return;
+      const groupId = `${Date.now()}-group`;
+      const color = getRandomColor();
+      
+      // Determine Shared Initiative: Use the initiative of the first participant in the selected list (or sort them first)
+      const firstP = participants.find(p => p.id === ids[0]);
+      const sharedInitiative = firstP ? firstP.initiative : 0;
+      const groupName = firstP ? `${firstP.name} Group` : 'Group';
+
+      setParticipants(prev => prev.map(p => {
+          if (ids.includes(p.id)) {
+              return {
+                  ...p,
+                  initiative: sharedInitiative, // Sync initiative
+                  group: { id: groupId, name: groupName, color }
+              };
+          }
+          return p;
+      }));
+  };
+  
+  const handleUngroupParticipants = (ids: string[]) => {
+       setParticipants(prev => prev.map(p => {
+          if (ids.includes(p.id)) {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { group, ...rest } = p;
+              return rest;
+          }
+          return p;
+      }));
+  };
+
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8">
@@ -493,6 +580,8 @@ const App: React.FC = () => {
               onRemoveCondition={handleRemoveCondition}
               onViewDetails={setDetailsToShow}
               onLoot={setLootingParticipant}
+              onGroup={handleGroupParticipants}
+              onUngroup={handleUngroupParticipants}
             />
             <CombatLog entries={combatLog} />
           </div>

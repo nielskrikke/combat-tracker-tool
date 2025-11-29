@@ -15,6 +15,10 @@ interface ParticipantItemProps {
   onRemoveCondition: (participantId: string, conditionId: string) => void;
   onViewDetails: (details: { url?: string; description?: string; title: string }) => void;
   onLoot: (participant: Participant) => void;
+  isSelectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelection?: () => void;
+  isInGroup?: boolean;
 }
 
 const TraitGrid: React.FC<{ participant: Participant }> = ({ participant }) => {
@@ -119,6 +123,10 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
   onRemoveCondition,
   onViewDetails,
   onLoot,
+  isSelectionMode,
+  isSelected,
+  onToggleSelection,
+  isInGroup
 }) => {
   const [isManagingHealth, setIsManagingHealth] = useState(false);
   const [isManagingConditions, setIsManagingConditions] = useState(false);
@@ -201,46 +209,75 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
 
   const detailsUrl = participant.characterSheetUrl || participant.statblockUrl;
   const hasDetails = detailsUrl || participant.description;
+  
+  // Style calculations
+  const baseClasses = `
+    relative grid grid-cols-12 gap-x-4 gap-y-2 items-center p-3 transition-all duration-300
+    ${isDead ? 'opacity-50' : ''}
+  `;
+  
+  // Group vs Single Styles
+  const containerClasses = isInGroup 
+    ? `${baseClasses} border-b border-stone-700/50 last:border-0 ${isActive ? 'bg-amber-900/20' : ''}`
+    : `${baseClasses} rounded-lg ${isActive ? 'bg-stone-700/80 ring-2 ring-amber-500' : 'bg-stone-800/50 hover:bg-stone-700/80'}`;
+
+  const selectionCheckbox = isSelectionMode ? (
+    <div className={`absolute ${isInGroup ? 'left-2' : '-left-3'} top-1/2 -translate-y-1/2 z-10`}>
+        <input 
+            type="checkbox" 
+            checked={isSelected} 
+            onChange={onToggleSelection}
+            className="h-5 w-5 rounded-full border-stone-400 text-amber-600 focus:ring-amber-500 cursor-pointer"
+        />
+    </div>
+  ) : null;
 
   return (
     <>
-      <li
-        className={`
-          grid grid-cols-12 gap-x-4 gap-y-2 items-center p-3 rounded-lg transition-all duration-300
-          ${isActive ? 'bg-stone-700/80 ring-2 ring-amber-500' : 'bg-stone-800/50 hover:bg-stone-700/80'}
-          ${isDead ? 'opacity-50' : ''}
-        `}
-      >
-        <div className="col-span-1 text-2xl font-bold text-center flex items-center justify-center">
-            {isEditingInitiative ? (
-                 <div className="flex items-center gap-1">
-                    <input
-                        type="number"
-                        value={newInitiative}
-                        onChange={(e) => setNewInitiative(e.target.value)}
-                        onKeyDown={handleInitiativeKeyDown}
-                        onBlur={handleInitiativeUpdate}
-                        className="w-16 bg-stone-900 text-white text-center rounded-md p-1 border border-stone-600 text-xl"
-                        autoFocus
-                    />
-                    <button onClick={handleInitiativeUpdate} className="p-1 text-emerald-400 hover:text-emerald-300 rounded-full">
-                        <CheckIcon className="w-5 h-5"/>
-                    </button>
-                 </div>
-            ) : (
-                <div 
-                    className="flex items-center justify-center gap-2 group cursor-pointer p-1 rounded-md"
-                    onClick={() => setIsEditingInitiative(true)}
-                    title="Click to edit initiative"
-                >
-                    <span>{participant.initiative}</span>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity text-stone-400">
-                        <EditIcon className="w-4 h-4" />
+      <div className={containerClasses}>
+        {selectionCheckbox}
+        
+        {/* Initiative Column (Hidden if in group) */}
+        {!isInGroup ? (
+            <div className="col-span-1 text-2xl font-bold text-center flex items-center justify-center">
+                {isEditingInitiative ? (
+                    <div className="flex items-center gap-1">
+                        <input
+                            type="number"
+                            value={newInitiative}
+                            onChange={(e) => setNewInitiative(e.target.value)}
+                            onKeyDown={handleInitiativeKeyDown}
+                            onBlur={handleInitiativeUpdate}
+                            className="w-16 bg-stone-900 text-white text-center rounded-md p-1 border border-stone-600 text-xl"
+                            autoFocus
+                        />
+                        <button onClick={handleInitiativeUpdate} className="p-1 text-emerald-400 hover:text-emerald-300 rounded-full">
+                            <CheckIcon className="w-5 h-5"/>
+                        </button>
                     </div>
-                </div>
-            )}
-        </div>
-        <div className="col-span-4 flex flex-col">
+                ) : (
+                    <div 
+                        className="flex items-center justify-center gap-2 group cursor-pointer p-1 rounded-md"
+                        onClick={() => setIsEditingInitiative(true)}
+                        title="Click to edit initiative"
+                    >
+                        <span>{participant.initiative}</span>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity text-stone-400">
+                            <EditIcon className="w-4 h-4" />
+                        </div>
+                    </div>
+                )}
+            </div>
+        ) : (
+             // Spacer for grouped item to align with grid if needed, currently 0 width to let content expand
+             // But layout grid expects 12 cols. If we skip col 1, we should shift everything left or just empty it.
+             // Let's hide it completely and use col-span differently? 
+             // Actually, letting others expand is better.
+             <div className="hidden"></div>
+        )}
+        
+        {/* Main Content: Name & Status */}
+        <div className={`${isInGroup ? 'col-span-5' : 'col-span-4'} flex flex-col`}>
           <div className="flex items-center gap-2">
              <span role="img" aria-label={participant.type} className="text-xl">
                 {participant.type === 'player' ? '🧑' : participant.type === 'dmpc' ? '🎭' : '🐲'}
@@ -273,6 +310,7 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
           </div>
         </div>
 
+        {/* HP Bar */}
         <div className="col-span-3 flex flex-col justify-center">
             {hasHp ? (
                 <>
@@ -309,11 +347,13 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
             )}
         </div>
 
+        {/* AC */}
         <div className="col-span-1 flex items-center justify-center gap-1">
           <ShieldIcon className="w-5 h-5 text-sky-400" />
           <span className="font-bold text-lg">{participant.ac}</span>
         </div>
 
+        {/* Actions */}
         <div className="col-span-3 flex items-center justify-end gap-1">
           {showLootButton ? (
              <button 
@@ -362,8 +402,9 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
           </button>
         </div>
 
+        {/* Legendary & Traits Rows */}
         {(hasLegendaryResistances || hasLegendaryActions) && (
-            <div className="col-span-12 mt-3 pt-3 border-t border-stone-700/60 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+            <div className={`col-span-12 mt-3 pt-3 border-t border-stone-700/60 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 ${isInGroup ? 'pl-2' : ''}`}>
                 {hasLegendaryResistances && (
                     <LegendaryTracker
                         label="Legendary Resistances"
@@ -390,7 +431,9 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
         )}
 
         {(participant.type === 'creature' || participant.type === 'dmpc') && <TraitGrid participant={participant} />}
-      </li>
+      </div>
+      
+      {/* Modals */}
       {isManagingConditions && (
         <ConditionManager
           participant={participant}

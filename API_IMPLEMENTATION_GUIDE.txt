@@ -1,0 +1,53 @@
+# D&D 5e Magic Item API Implementation Guide
+
+## 1. API Source
+We utilize the open-source D&D 5th Edition API.
+**Base URL:** `https://www.dnd5eapi.co`
+**Endpoint:** `/api/magic-items`
+
+## 2. Data Fetching Strategy (The Provider Pattern)
+To handle the large dataset efficiently without blocking the UI or hitting API rate limits on every reload, we use a Context Provider (`MagicItemProvider`).
+
+### Key Steps:
+1.  **Cache Check:**
+    *   On application load, check `localStorage` for a specific key (e.g., `dnd_magic_items_cache_v1`).
+    *   If data exists, parse and load it into state immediately. This makes subsequent loads instant.
+
+2.  **Fetch Index:**
+    *   If no cache exists, perform a GET request to `/api/magic-items`.
+    *   This returns a lightweight index array: `[{ index: "acid-vial", name: "Acid Vial", url: "/api/magic-items/acid-vial" }, ...]`.
+
+3.  **Hydrate Details (The "Waterfall"):**
+    *   Iterate through the index array.
+    *   Perform a fetch for *each* item's specific URL to get full details (Description, Rarity, Attunement).
+    *   *UX Tip:* Maintain a `loadingProgress` string state (e.g., "Loading Item 5/300") to display to the user, as this process can take a few seconds.
+
+4.  **Normalization & Storage:**
+    *   Flatten complex nested objects where possible.
+    *   Check `requires_attunement` (boolean) or parse the description text for the word "attunement".
+    *   Save the final array of item objects to `localStorage`.
+
+## 3. Search Modal Implementation
+The modal (`MagicItemSearchModal`) consumes the data from the Provider and handles client-side filtering.
+
+### Features:
+*   **Multi-Select Filters:** Use arrays to allow users to select multiple Rarity types or Item categories (Wondrous Item, Potion, etc.) simultaneously.
+*   **Keyword Search:** Filter based on both the Item Name and the Description text to find items by effect (e.g., searching "fire" finds "Wand of Fireballs").
+*   **Dynamic Rendering:** Use `useMemo` to filter the `allMagicItems` array whenever filter state changes, ensuring the UI remains responsive.
+
+## 4. Example Data Object
+This is the shape of the data after processing:
+
+```json
+{
+  "index": "bag-of-holding",
+  "name": "Bag of Holding",
+  "url": "/api/magic-items/bag-of-holding",
+  "rarity": { "name": "Uncommon" },
+  "equipment_category": { "name": "Wondrous Item" },
+  "requires_attunement": "", // or "attuned"
+  "desc": [
+    "This bag has an interior space considerably larger than its outside dimensions..."
+  ]
+}
+```

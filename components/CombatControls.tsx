@@ -1,7 +1,6 @@
 
-
 import React from 'react';
-import { PlayIcon, ArrowRightIcon, ArrowLeftIcon, RefreshIcon, TrashIcon } from './icons';
+import { PlayIcon, ArrowRightIcon, ArrowLeftIcon, RefreshIcon, TrashIcon, ExternalLinkIcon } from './icons';
 
 interface CombatControlsProps {
   round: number;
@@ -12,6 +11,7 @@ interface CombatControlsProps {
   onEnd: () => void;
   onReset: () => void;
   onClear: () => void;
+  onOpenPlayerView: () => void;
   hasParticipants: boolean;
 }
 
@@ -24,11 +24,20 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
   onEnd,
   onReset,
   onClear,
+  onOpenPlayerView,
   hasParticipants
 }) => {
   return (
-    <div className="bg-stone-800/50 rounded-lg shadow-lg p-6 border border-stone-700">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-stone-800/50 rounded-lg shadow-lg p-6 border border-stone-700 relative">
+      <button
+        onClick={onOpenPlayerView}
+        className="absolute top-4 right-4 p-2 text-stone-400 hover:text-amber-500 transition-colors bg-stone-900/40 rounded-md border border-stone-700"
+        title="Pop-out Player View (Separate Tab)"
+      >
+        <ExternalLinkIcon className="w-5 h-5" />
+      </button>
+
+      <div className="flex justify-between items-center mb-4 pr-10">
         <h3 className="text-2xl font-medieval text-white">Combat Controls</h3>
         {isCombatStarted && (
           <div className="text-center">
@@ -37,6 +46,7 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
           </div>
         )}
       </div>
+
       <div className="grid grid-cols-2 gap-4">
         {!isCombatStarted ? (
           <button
@@ -65,6 +75,7 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
             </button>
           </>
         )}
+        
         <button
           onClick={onEnd}
           disabled={!isCombatStarted}

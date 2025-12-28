@@ -22,6 +22,8 @@ interface SavedState {
   combatLog: LogEntry[];
 }
 
+const SYNC_CHANNEL = 'dnd_combat_sync';
+
 const getRandomColor = () => {
     const colors = [
       'border-red-500 bg-red-900/20',
@@ -45,6 +47,109 @@ const getRandomColor = () => {
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
+/** 
+ * Player View Component
+ * A simplified, read-only view of the initiative for the players.
+ */
+const PlayerView: React.FC<{
+  participants: Participant[];
+  currentIndex: number;
+  round: number;
+}> = ({ participants, currentIndex, round }) => {
+  const sorted = useMemo(() => {
+    return [...participants].sort((a, b) => {
+      if (b.initiative !== a.initiative) return b.initiative - a.initiative;
+      const dexA = a.dexterityModifier ?? -Infinity;
+      const dexB = b.dexterityModifier ?? -Infinity;
+      if (dexB !== dexA) return dexB - dexA;
+      return a.name.localeCompare(b.name);
+    });
+  }, [participants]);
+
+  return (
+    <div className="min-h-screen bg-stone-950 p-6 md:p-12">
+      <div className="max-w-4xl mx-auto">
+        <header className="flex flex-col items-center mb-12 border-b border-stone-800 pb-8">
+          <h1 className="text-4xl font-medieval text-amber-500 flex items-center gap-4 mb-2">
+            <D20Icon className="w-8 h-8" />
+            Initiative Order
+            <D20Icon className="w-8 h-8" />
+          </h1>
+          {round > 0 ? (
+            <div className="text-stone-400 text-xl font-medieval uppercase tracking-widest">
+              Round <span className="text-white text-3xl font-bold">{round}</span>
+            </div>
+          ) : (
+            <div className="text-stone-500 text-lg italic">Waiting for combat to begin...</div>
+          )}
+        </header>
+
+        <ul className="space-y-4">
+          {sorted.map((p, idx) => {
+            const isActive = idx === currentIndex;
+            const isDefeated = p.hp === 0;
+            return (
+              <li 
+                key={p.id} 
+                className={`
+                  relative flex items-center gap-6 p-6 rounded-xl border-2 transition-all duration-500
+                  ${isActive 
+                    ? 'bg-amber-900/20 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.2)] scale-105 z-10' 
+                    : 'bg-stone-900/40 border-stone-800 scale-100 opacity-90'}
+                  ${isDefeated ? 'opacity-40 grayscale blur-[0.5px]' : ''}
+                `}
+              >
+                {/* Initiative Circle */}
+                <div className={`
+                  w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold shrink-0
+                  ${isActive ? 'bg-amber-500 text-stone-950' : 'bg-stone-800 text-stone-400'}
+                `}>
+                  {p.initiative}
+                </div>
+
+                {/* Info Container */}
+                <div className="flex-grow flex flex-col gap-1">
+                  <div className="flex items-center gap-3">
+                    <span role="img" aria-label={p.type} className="text-2xl">
+                        {p.type === 'player' ? '🧑' : p.type === 'dmpc' ? '🎭' : '🐲'}
+                    </span>
+                    <span className={`text-2xl font-medieval ${isActive ? 'text-white' : 'text-stone-300'}`}>
+                      {p.name}
+                    </span>
+                    {isActive && (
+                      <span className="bg-amber-500 text-stone-950 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter animate-pulse">
+                        Current Turn
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Conditions */}
+                  <div className="flex flex-wrap gap-2">
+                    {p.conditions.map(c => (
+                      <span key={c.id} className="bg-violet-900/60 text-violet-200 border border-violet-700/50 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                        {c.name} {c.duration !== Infinity && `(${c.duration})`}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Decorative End (Arrow for current) */}
+                {isActive && (
+                   <div className="text-amber-500 animate-[bounce_1s_infinite_horizontal] hidden md:block">
+                     <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                     </svg>
+                   </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
@@ -57,6 +162,55 @@ const App: React.FC = () => {
   const [lootingParticipant, setLootingParticipant] = useState<Participant | null>(null);
   const [ties, setTies] = useState<Participant[][] | null>(null);
 
+  // Sync state across windows - switched to Hash for Safari compatibility with Blob URLs
+  const [isPlayerView, setIsPlayerView] = useState(() => window.location.hash === '#player');
+  const channel = useMemo(() => new BroadcastChannel(SYNC_CHANNEL), []);
+
+  useEffect(() => {
+    const handleHashChange = () => setIsPlayerView(window.location.hash === '#player');
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Effect for Broadcasting (DM only)
+  useEffect(() => {
+    if (!isPlayerView) {
+      channel.postMessage({
+        type: 'SYNC',
+        participants,
+        currentIndex,
+        round
+      });
+      // Also save to localStorage for window refreshes/initial loads
+      localStorage.setItem('combat_state_sync', JSON.stringify({ participants, currentIndex, round }));
+    }
+  }, [participants, currentIndex, round, isPlayerView, channel]);
+
+  // Effect for Listening (Player View only)
+  useEffect(() => {
+    if (isPlayerView) {
+      // Load initial state
+      const initial = localStorage.getItem('combat_state_sync');
+      if (initial) {
+        try {
+          const data = JSON.parse(initial);
+          setParticipants(data.participants);
+          setCurrentIndex(data.currentIndex);
+          setRound(data.round);
+        } catch (e) { console.error("Sync error", e); }
+      }
+
+      const handleMessage = (event: MessageEvent) => {
+        if (event.data.type === 'SYNC') {
+          setParticipants(event.data.participants);
+          setCurrentIndex(event.data.currentIndex);
+          setRound(event.data.round);
+        }
+      };
+      channel.addEventListener('message', handleMessage);
+      return () => channel.removeEventListener('message', handleMessage);
+    }
+  }, [isPlayerView, channel]);
 
   const sortedParticipants = useMemo(() => {
     return [...participants].sort((a, b) => {
@@ -522,6 +676,12 @@ const App: React.FC = () => {
     }
   };
 
+  const handleOpenPlayerView = () => {
+    const baseUrl = window.location.href.split('#')[0].split('?')[0];
+    const playerUrl = `${baseUrl}#player`;
+    window.open(playerUrl, '_blank');
+  };
+
   // Grouping Logic
   const handleGroupParticipants = (ids: string[]) => {
       if (ids.length < 2) return;
@@ -556,6 +716,9 @@ const App: React.FC = () => {
       }));
   };
 
+  if (isPlayerView) {
+    return <PlayerView participants={participants} currentIndex={currentIndex} round={round} />;
+  }
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8">
@@ -596,6 +759,7 @@ const App: React.FC = () => {
               onEnd={handleEndCombat}
               onReset={handleResetCombat}
               onClear={handleClearInitiative}
+              onOpenPlayerView={handleOpenPlayerView}
               hasParticipants={participants.length > 0}
             />
             <EncounterDifficulty participants={participants} />

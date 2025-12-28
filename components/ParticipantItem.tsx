@@ -112,6 +112,52 @@ const LegendaryTracker: React.FC<{
     );
 };
 
+const DeathSaveTracker: React.FC<{
+    participant: Participant;
+    onUpdate: (updates: Partial<Participant>) => void;
+}> = ({ participant, onUpdate }) => {
+    const s = participant.deathSavesSuccess || 0;
+    const f = participant.deathSavesFailure || 0;
+
+    const setSuccess = (val: number) => onUpdate({ deathSavesSuccess: val === s ? val - 1 : val });
+    const setFailure = (val: number) => onUpdate({ deathSavesFailure: val === f ? val - 1 : val });
+
+    return (
+        <div className="flex flex-col gap-2 p-2 bg-stone-900/40 rounded border border-stone-700">
+            <div className="flex items-center justify-between gap-4">
+                 <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-stone-500 uppercase tracking-tighter">Successes</span>
+                    <div className="flex gap-1.5">
+                        {[1, 2, 3].map(i => (
+                            <button
+                                key={i}
+                                onClick={() => setSuccess(i)}
+                                className={`w-5 h-5 rounded-full border transition-all ${i <= s ? 'bg-emerald-500 border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'border-stone-600 hover:border-emerald-500/50'}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+                <div className="flex flex-col gap-1 items-end">
+                    <span className="text-[10px] font-bold text-stone-500 uppercase tracking-tighter">Failures</span>
+                    <div className="flex gap-1.5">
+                        {[1, 2, 3].map(i => (
+                            <button
+                                key={i}
+                                onClick={() => setFailure(i)}
+                                className={`w-5 h-5 rounded-full border transition-all flex items-center justify-center ${i <= f ? 'bg-red-600 border-red-500 shadow-[0_0_8px_rgba(220,38,38,0.3)]' : 'border-stone-600 hover:border-red-500/50'}`}
+                            >
+                                {i <= f && <span className="text-[8px] text-white">💀</span>}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            {f >= 3 && <p className="text-[10px] text-red-500 font-bold text-center uppercase tracking-widest animate-pulse">Deceased</p>}
+            {s >= 3 && <p className="text-[10px] text-emerald-500 font-bold text-center uppercase tracking-widest">Stable</p>}
+        </div>
+    );
+};
+
 
 export const ParticipantItem: React.FC<ParticipantItemProps> = ({
   participant,
@@ -203,6 +249,8 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
   const tempHpSegmentPercentage = totalEffectiveHp > 0 ? (tempHp / totalEffectiveHp) * 100 : 0;
 
   const isDead = typeof participant.hp === 'number' && participant.hp <= 0;
+  const isTrulyDead = isDead && (participant.isInstantDead || (participant.deathSavesFailure && participant.deathSavesFailure >= 3));
+  
   const hasLegendaryResistances = participant.type !== 'player' && participant.legendaryResistances && participant.legendaryResistances > 0;
   const hasLegendaryActions = participant.type !== 'player' && participant.legendaryActions && participant.legendaryActions > 0;
   const showLootButton = !isCombatActive && isDead && (participant.type === 'creature' || participant.type === 'dmpc');
@@ -213,7 +261,8 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
   // Style calculations
   const baseClasses = `
     relative grid grid-cols-12 gap-x-4 gap-y-2 items-center p-3 transition-all duration-300
-    ${isDead ? 'opacity-50' : ''}
+    ${isDead ? 'opacity-70' : ''}
+    ${isTrulyDead ? 'opacity-50 grayscale' : ''}
   `;
   
   // Group vs Single Styles
@@ -269,10 +318,6 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
                 )}
             </div>
         ) : (
-             // Spacer for grouped item to align with grid if needed, currently 0 width to let content expand
-             // But layout grid expects 12 cols. If we skip col 1, we should shift everything left or just empty it.
-             // Let's hide it completely and use col-span differently? 
-             // Actually, letting others expand is better.
              <div className="hidden"></div>
         )}
         
@@ -282,7 +327,7 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
              <span role="img" aria-label={participant.type} className="text-xl">
                 {participant.type === 'player' ? '🧑' : participant.type === 'dmpc' ? '🎭' : '🐲'}
              </span>
-            <span className={`font-bold text-lg ${isDead ? 'line-through text-stone-400' : 'text-white'}`}>
+            <span className={`font-bold text-lg ${isTrulyDead ? 'line-through text-stone-400' : isDead ? 'text-red-300' : 'text-white'}`}>
                 {participant.name}
             </span>
              {hasDetails ? (
@@ -300,7 +345,8 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
                 </button>
             ) : null}
           </div>
-          {isDead && <span className="text-xs text-red-500 font-bold ml-7">DEFEATED</span>}
+          {isTrulyDead && <span className="text-[10px] text-red-500 font-bold ml-7 uppercase tracking-widest">Deceased</span>}
+          {isDead && !isTrulyDead && <span className="text-[10px] text-red-400 font-bold ml-7 uppercase tracking-widest animate-pulse">Unconscious</span>}
           <div className="flex flex-wrap gap-1 mt-1 ml-7">
               {participant.conditions.map(condition => (
                   <span key={condition.id} className="px-2 py-0.5 text-xs bg-violet-800 text-violet-100 rounded-full">
@@ -310,9 +356,14 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
           </div>
         </div>
 
-        {/* HP Bar */}
+        {/* HP Bar or Death Saves */}
         <div className="col-span-3 flex flex-col justify-center">
-            {hasHp ? (
+            {isDead && (participant.type === 'player' || participant.type === 'dmpc') ? (
+                <DeathSaveTracker 
+                    participant={participant} 
+                    onUpdate={(u) => onUpdateParticipant(participant.id, u)} 
+                />
+            ) : hasHp ? (
                 <>
                     <div className="flex items-center gap-2 text-sm">
                         <span>
@@ -364,7 +415,7 @@ export const ParticipantItem: React.FC<ParticipantItemProps> = ({
                 <LootIcon className="w-4 h-4" />
                 Loot
             </button>
-          ) : !isDead ? (
+          ) : !isTrulyDead ? (
               <>
                  <button 
                     onClick={() => setIsManagingConditions(true)}

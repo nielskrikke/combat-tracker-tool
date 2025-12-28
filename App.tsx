@@ -70,6 +70,19 @@ const PlayerView: React.FC<{
     if (typeof p.hp !== 'number' || typeof p.maxHp !== 'number' || p.maxHp <= 0) {
       return { label: 'Unknown', color: 'text-stone-500' };
     }
+    
+    if (p.hp === 0) {
+        if (p.isInstantDead || (p.deathSavesFailure && p.deathSavesFailure >= 3)) {
+            return { label: 'Deceased', color: 'text-red-700' };
+        }
+        if (p.type === 'player' || p.type === 'dmpc') {
+            const s = p.deathSavesSuccess || 0;
+            const f = p.deathSavesFailure || 0;
+            return { label: `Unconscious (${s}S, ${f}F)`, color: 'text-red-400' };
+        }
+        return { label: 'Defeated', color: 'text-stone-500' };
+    }
+
     const percent = (p.hp / p.maxHp) * 100;
     if (percent > 75) return { label: 'Unscathed', color: 'text-emerald-400' };
     if (percent > 50) return { label: 'Bruised', color: 'text-lime-400' };
@@ -321,7 +334,9 @@ const App: React.FC = () => {
     
     const newItems = inputList.map((p, i) => ({
         ...p,
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${i}`
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${i}`,
+        deathSavesSuccess: 0,
+        deathSavesFailure: 0,
     }));
     
     const newParticipants = [...participants, ...newItems];
@@ -373,6 +388,8 @@ const App: React.FC = () => {
     const participant = participants.find(p => p.id === id);
     if (!participant) return;
 
+    let finalUpdates = { ...updates };
+
     // Log HP changes
     if (updates.hp !== undefined && typeof participant.hp === 'number') {
         const oldHp = participant.hp;
@@ -381,9 +398,24 @@ const App: React.FC = () => {
             addLogEntry(`${participant.name} takes ${oldHp - newHp} damage.`, 'damage');
         } else if (newHp > oldHp) {
             addLogEntry(`${participant.name} heals for ${newHp - oldHp} hit points.`, 'healing');
+            
+            // Healing resets death saves for players/DMPCs
+            if (oldHp === 0 && (participant.type === 'player' || participant.type === 'dmpc')) {
+                finalUpdates.deathSavesSuccess = 0;
+                finalUpdates.deathSavesFailure = 0;
+                finalUpdates.isInstantDead = false;
+            }
         }
-        if (newHp <= 0 && oldHp > 0) {
-            addLogEntry(`${participant.name} has been defeated!`, 'death');
+        
+        // Terminology check for dropping to 0 HP
+        if (updates.isInstantDead) {
+            addLogEntry(`${participant.name} died instantly from massive damage!`, 'death');
+        } else if (newHp <= 0 && oldHp > 0) {
+            if (participant.type === 'player' || participant.type === 'dmpc') {
+                addLogEntry(`${participant.name} is Unconscious!`, 'death');
+            } else {
+                addLogEntry(`${participant.name} has been defeated!`, 'death');
+            }
         }
     }
     
@@ -401,7 +433,6 @@ const App: React.FC = () => {
     }
 
     // Logic for Mob Count Update (Shared Health)
-    let finalUpdates = { ...updates };
     if (updates.hp !== undefined && participant.individualMaxHp && participant.individualMaxHp > 0) {
         const newHp = Math.max(0, updates.hp);
         const count = Math.ceil(newHp / participant.individualMaxHp);
@@ -509,6 +540,9 @@ const App: React.FC = () => {
             conditions: [],
             legendaryResistancesUsed: 0,
             legendaryActionsUsed: 0,
+            deathSavesSuccess: 0,
+            deathSavesFailure: 0,
+            isInstantDead: false,
         })));
         setCurrentIndex(-1);
         setRound(0);
@@ -653,7 +687,9 @@ const App: React.FC = () => {
 
     const newCreaturesWithIds = creaturesWithNewInitiative.map((c, index) => ({
         ...c,
-        id: `${Date.now()}-${c.name}-${index}` // More robust ID
+        id: `${Date.now()}-${c.name}-${index}`, // More robust ID
+        deathSavesSuccess: 0,
+        deathSavesFailure: 0,
     }));
 
     const newTotalParticipants = [...participants, ...newCreaturesWithIds];

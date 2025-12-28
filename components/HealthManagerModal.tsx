@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import type { Participant } from '../types';
 import { HeartMinusIcon, HeartPlusIcon, TempHpIcon, MaxHpIcon, CloseIcon } from './icons';
@@ -67,6 +66,7 @@ export const HealthManagerModal: React.FC<HealthManagerModalProps> = ({ particip
 
     const currentTempHp = participant.tempHp || 0;
     const currentHp = participant.hp || 0;
+    const currentMaxHp = participant.maxHp || 0;
 
     const tempHpDamage = Math.min(currentTempHp, damageAmount);
     const newTempHp = currentTempHp - tempHpDamage;
@@ -74,7 +74,16 @@ export const HealthManagerModal: React.FC<HealthManagerModalProps> = ({ particip
     const remainingDamage = damageAmount - tempHpDamage;
     const newHp = Math.max(0, currentHp - remainingDamage);
 
-    onUpdateParticipant(participant.id, { hp: newHp, tempHp: newTempHp });
+    // Instant Death rule: If remaining damage (after temp hp) reduces you to 0 HP
+    // and the leftover damage equals or exceeds your HP maximum.
+    const excessDamage = remainingDamage - currentHp;
+    const isInstantDead = excessDamage >= currentMaxHp && (participant.type === 'player' || participant.type === 'dmpc');
+
+    onUpdateParticipant(participant.id, { 
+        hp: newHp, 
+        tempHp: newTempHp, 
+        isInstantDead: isInstantDead || participant.isInstantDead 
+    });
     onClose();
   };
 
@@ -130,7 +139,7 @@ export const HealthManagerModal: React.FC<HealthManagerModalProps> = ({ particip
           </button>
         </div>
         
-        <div className="text-center bg-stone-900/50 p-3 rounded-lg mb-4">
+        <div className="text-center bg-stone-900/50 p-3 rounded-lg mb-4 border border-stone-700">
             <span className="text-2xl font-bold text-white">
                 {participant.hp}
                 {(participant.tempHp ?? 0) > 0 && <span className="text-sky-400"> +{participant.tempHp}</span>}

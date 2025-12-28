@@ -46,6 +46,9 @@ export interface Participant {
   dexterityModifier?: number;
   dexApiUrl?: string; // To fetch stats for creatures from API
   group?: Group;
+  deathSavesSuccess?: number;
+  deathSavesFailure?: number;
+  isInstantDead?: boolean; // Internal flag for session logging
 }
 
 export interface LogEntry {

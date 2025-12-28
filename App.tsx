@@ -66,9 +66,20 @@ const PlayerView: React.FC<{
     });
   }, [participants]);
 
+  const getVitality = (p: Participant) => {
+    if (typeof p.hp !== 'number' || typeof p.maxHp !== 'number' || p.maxHp <= 0) {
+      return { label: 'Unknown', color: 'text-stone-500' };
+    }
+    const percent = (p.hp / p.maxHp) * 100;
+    if (percent > 75) return { label: 'Unscathed', color: 'text-emerald-400' };
+    if (percent > 50) return { label: 'Bruised', color: 'text-lime-400' };
+    if (percent > 25) return { label: 'Wounded', color: 'text-orange-400' };
+    return { label: 'Crippled', color: 'text-red-500' };
+  };
+
   return (
     <div className="min-h-screen bg-stone-950 p-6 md:p-12">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <header className="flex flex-col items-center mb-12 border-b border-stone-800 pb-8">
           <h1 className="text-4xl font-medieval text-amber-500 flex items-center gap-4 mb-2">
             <D20Icon className="w-8 h-8" />
@@ -84,63 +95,79 @@ const PlayerView: React.FC<{
           )}
         </header>
 
+        {/* Column Headers */}
+        <div className="hidden md:grid grid-cols-12 gap-6 px-6 mb-4 text-xs font-bold uppercase tracking-widest text-stone-500">
+          <div className="col-span-1 text-center">Init</div>
+          <div className="col-span-8">Combatant</div>
+          <div className="col-span-3 text-right pr-4">Vitality</div>
+        </div>
+
         <ul className="space-y-4">
           {sorted.map((p, idx) => {
             const isActive = idx === currentIndex;
             const isDefeated = p.hp === 0;
+            const vitality = getVitality(p);
+            
             return (
               <li 
                 key={p.id} 
                 className={`
-                  relative flex items-center gap-6 p-6 rounded-xl border-2 transition-all duration-500
+                  relative grid grid-cols-12 items-center gap-4 sm:gap-6 p-4 sm:p-6 rounded-xl border-2 transition-all duration-500
                   ${isActive 
                     ? 'bg-amber-900/20 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.2)] scale-105 z-10' 
                     : 'bg-stone-900/40 border-stone-800 scale-100 opacity-90'}
                   ${isDefeated ? 'opacity-40 grayscale blur-[0.5px]' : ''}
                 `}
               >
-                {/* Initiative Circle */}
-                <div className={`
-                  w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold shrink-0
-                  ${isActive ? 'bg-amber-500 text-stone-950' : 'bg-stone-800 text-stone-400'}
-                `}>
-                  {p.initiative}
+                {/* Initiative Column */}
+                <div className="col-span-2 md:col-span-1 flex items-center justify-center">
+                  <div className={`
+                    w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-xl sm:text-2xl font-bold shrink-0
+                    ${isActive ? 'bg-amber-500 text-stone-950' : 'bg-stone-800 text-stone-400'}
+                  `}>
+                    {p.initiative}
+                  </div>
                 </div>
 
-                {/* Info Container */}
-                <div className="flex-grow flex flex-col gap-1">
-                  <div className="flex items-center gap-3">
-                    <span role="img" aria-label={p.type} className="text-2xl">
+                {/* Info Column */}
+                <div className="col-span-7 md:col-span-8 flex flex-col gap-1 overflow-hidden">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <span role="img" aria-label={p.type} className="text-xl sm:text-2xl">
                         {p.type === 'player' ? '🧑' : p.type === 'dmpc' ? '🎭' : '🐲'}
                     </span>
-                    <span className={`text-2xl font-medieval ${isActive ? 'text-white' : 'text-stone-300'}`}>
+                    <span className={`text-xl sm:text-2xl font-medieval truncate ${isActive ? 'text-white' : 'text-stone-300'}`}>
                       {p.name}
                     </span>
                     {isActive && (
                       <span className="bg-amber-500 text-stone-950 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter animate-pulse">
-                        Current Turn
+                        Turn
                       </span>
                     )}
                   </div>
                   
                   {/* Conditions */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1">
                     {p.conditions.map(c => (
-                      <span key={c.id} className="bg-violet-900/60 text-violet-200 border border-violet-700/50 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                      <span key={c.id} className="bg-violet-900/60 text-violet-200 border border-violet-700/50 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider">
                         {c.name} {c.duration !== Infinity && `(${c.duration})`}
                       </span>
                     ))}
                   </div>
                 </div>
 
-                {/* Decorative End (Arrow for current) */}
-                {isActive && (
-                   <div className="text-amber-500 animate-[bounce_1s_infinite_horizontal] hidden md:block">
-                     <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                     </svg>
+                {/* Vitality Column */}
+                <div className="col-span-3 text-right pr-2">
+                   <div className={`text-sm sm:text-lg font-bold uppercase tracking-wide ${vitality.color}`}>
+                     {vitality.label}
                    </div>
-                )}
+                   {isActive && (
+                      <div className="text-amber-500 animate-[bounce_1s_infinite_horizontal] mt-2 hidden md:block">
+                        <svg className="w-6 h-6 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                      </div>
+                   )}
+                </div>
               </li>
             );
           })}

@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { AddParticipantForm } from './components/AddParticipantForm';
 import { InitiativeList } from './components/InitiativeList';
 import { CombatControls } from './components/CombatControls';
@@ -56,6 +56,8 @@ const PlayerView: React.FC<{
   currentIndex: number;
   round: number;
 }> = ({ participants, currentIndex, round }) => {
+  const activeRef = useRef<HTMLLIElement>(null);
+
   const sorted = useMemo(() => {
     return [...participants].sort((a, b) => {
       if (b.initiative !== a.initiative) return b.initiative - a.initiative;
@@ -65,6 +67,16 @@ const PlayerView: React.FC<{
       return a.name.localeCompare(b.name);
     });
   }, [participants]);
+
+  // Auto-scroll logic: centers the active participant when turn changes
+  useEffect(() => {
+    if (activeRef.current) {
+      activeRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [currentIndex]);
 
   const getVitality = (p: Participant) => {
     if (typeof p.hp !== 'number' || typeof p.maxHp !== 'number' || p.maxHp <= 0) {
@@ -91,7 +103,7 @@ const PlayerView: React.FC<{
   };
 
   return (
-    <div className="min-h-screen bg-stone-950 p-6 md:p-12">
+    <div className="min-h-screen bg-stone-950 p-6 md:p-12 pb-32">
       <div className="max-w-5xl mx-auto">
         <header className="flex flex-col items-center mb-12 border-b border-stone-800 pb-8">
           <h1 className="text-4xl font-medieval text-amber-500 flex items-center gap-4 mb-2">
@@ -124,6 +136,7 @@ const PlayerView: React.FC<{
             return (
               <li 
                 key={p.id} 
+                ref={isActive ? activeRef : null}
                 className={`
                   relative grid grid-cols-12 items-center gap-4 sm:gap-6 p-4 sm:p-6 rounded-xl border-2 transition-all duration-500
                   ${isActive 

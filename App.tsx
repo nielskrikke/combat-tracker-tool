@@ -26,23 +26,12 @@ const SYNC_CHANNEL = 'dnd_combat_sync';
 
 const getRandomColor = () => {
     const colors = [
-      'border-red-500 bg-red-900/20',
-      'border-orange-500 bg-orange-900/20',
-      'border-amber-500 bg-amber-900/20',
-      'border-yellow-500 bg-yellow-900/20',
-      'border-lime-500 bg-lime-900/20',
-      'border-green-500 bg-green-900/20',
-      'border-emerald-500 bg-emerald-900/20',
-      'border-teal-500 bg-teal-900/20',
-      'border-cyan-500 bg-cyan-900/20',
-      'border-sky-500 bg-sky-900/20',
-      'border-blue-500 bg-blue-900/20',
-      'border-indigo-500 bg-indigo-900/20',
-      'border-violet-500 bg-violet-900/20',
-      'border-purple-500 bg-purple-900/20',
-      'border-fuchsia-500 bg-fuchsia-900/20',
-      'border-pink-500 bg-pink-900/20',
-      'border-rose-500 bg-rose-900/20',
+      'border-dnd-red/50 bg-dnd-red/10',
+      'border-dnd-gold/50 bg-dnd-gold/10',
+      'border-sky-500/50 bg-sky-900/10',
+      'border-emerald-500/50 bg-emerald-900/10',
+      'border-violet-500/50 bg-violet-900/10',
+      'border-white/20 bg-white/5',
     ];
     return colors[Math.floor(Math.random() * colors.length)];
   };
@@ -80,48 +69,52 @@ const PlayerView: React.FC<{
 
   const getVitality = (p: Participant) => {
     if (typeof p.hp !== 'number' || typeof p.maxHp !== 'number' || p.maxHp <= 0) {
-      return { label: 'Unknown', color: 'text-stone-500' };
+      return { label: 'Unknown', color: 'text-dnd-text/40' };
     }
     
     if (p.hp === 0) {
         if (p.isInstantDead || (p.deathSavesFailure && p.deathSavesFailure >= 3)) {
-            return { label: 'Deceased', color: 'text-red-700' };
+            return { label: 'Deceased', color: 'text-dnd-red' };
         }
         if (p.type === 'player' || p.type === 'dmpc') {
             const s = p.deathSavesSuccess || 0;
             const f = p.deathSavesFailure || 0;
-            return { label: `Unconscious (${s}S, ${f}F)`, color: 'text-red-400' };
+            return { label: `Unconscious (${s}S, ${f}F)`, color: 'text-dnd-red/80' };
         }
-        return { label: 'Defeated', color: 'text-stone-500' };
+        return { label: 'Defeated', color: 'text-dnd-text/40' };
     }
 
     const percent = (p.hp / p.maxHp) * 100;
-    if (percent > 75) return { label: 'Unscathed', color: 'text-emerald-400' };
-    if (percent > 50) return { label: 'Bruised', color: 'text-lime-400' };
-    if (percent > 25) return { label: 'Wounded', color: 'text-orange-400' };
-    return { label: 'Crippled', color: 'text-red-500' };
+    if (percent > 75) return { label: 'Unscathed', color: 'text-emerald-500' };
+    if (percent > 50) return { label: 'Bruised', color: 'text-emerald-500/60' };
+    if (percent > 25) return { label: 'Wounded', color: 'text-dnd-gold' };
+    return { label: 'Crippled', color: 'text-dnd-red' };
   };
 
   return (
-    <div className="min-h-screen bg-stone-950 p-6 md:p-12 pb-32">
-      <div className="max-w-5xl mx-auto">
-        <header className="flex flex-col items-center mb-12 border-b border-stone-800 pb-8">
-          <h1 className="text-4xl font-medieval text-amber-500 flex items-center gap-4 mb-2">
-            <D20Icon className="w-8 h-8" />
+    <div className="min-h-screen bg-dnd-dark p-4 md:p-8 pb-20 relative overflow-hidden">
+      {/* Atmospheric Glows */}
+      <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-dnd-gold/5 rounded-full blur-[100px]"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-dnd-gold/5 rounded-full blur-[100px]"></div>
+      </div>
+
+      <div className="max-w-5xl mx-auto relative z-10">
+        <header className="flex flex-col items-center mb-8 border-b border-white/5 pb-6">
+          <h1 className="text-2xl md:text-4xl font-sans font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-[#e5c983] to-[#8a7238] drop-shadow-2xl uppercase mb-2">
             Initiative Order
-            <D20Icon className="w-8 h-8" />
           </h1>
           {round > 0 ? (
-            <div className="text-stone-400 text-xl font-medieval uppercase tracking-widest">
-              Round <span className="text-white text-3xl font-bold">{round}</span>
+            <div className="text-dnd-text/60 text-xl font-sans uppercase tracking-widest">
+              Round <span className="text-dnd-gold text-3xl font-black">{round}</span>
             </div>
           ) : (
-            <div className="text-stone-500 text-lg italic">Waiting for combat to begin...</div>
+            <div className="text-dnd-text/40 text-lg italic font-sans">Waiting for combat to begin...</div>
           )}
         </header>
 
         {/* Column Headers */}
-        <div className="hidden md:grid grid-cols-12 gap-6 px-6 mb-4 text-xs font-bold uppercase tracking-widest text-stone-500">
+        <div className="hidden md:grid grid-cols-12 gap-6 px-6 mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-dnd-text/30">
           <div className="col-span-1 text-center">Init</div>
           <div className="col-span-8">Combatant</div>
           <div className="col-span-3 text-right pr-4">Vitality</div>
@@ -138,18 +131,18 @@ const PlayerView: React.FC<{
                 key={p.id} 
                 ref={isActive ? activeRef : null}
                 className={`
-                  relative grid grid-cols-12 items-center gap-4 sm:gap-6 p-4 sm:p-6 rounded-xl border-2 transition-all duration-500
+                  relative grid grid-cols-12 items-center gap-4 sm:gap-6 p-4 sm:p-6 rounded-xl border transition-all duration-500
                   ${isActive 
-                    ? 'bg-amber-900/20 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.2)] scale-105 z-10' 
-                    : 'bg-stone-900/40 border-stone-800 scale-100 opacity-90'}
+                    ? 'bg-dnd-panel border-dnd-gold/30 shadow-[0_0_30px_rgba(201,173,106,0.1)] scale-105 z-10' 
+                    : 'bg-dnd-panel/40 border-white/5 scale-100 opacity-80'}
                   ${isDefeated ? 'opacity-40 grayscale blur-[0.5px]' : ''}
                 `}
               >
                 {/* Initiative Column */}
                 <div className="col-span-2 md:col-span-1 flex items-center justify-center">
                   <div className={`
-                    w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-xl sm:text-2xl font-bold shrink-0
-                    ${isActive ? 'bg-amber-500 text-stone-950' : 'bg-stone-800 text-stone-400'}
+                    w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-xl sm:text-2xl font-black shrink-0
+                    ${isActive ? 'bg-dnd-gold text-black shadow-lg shadow-dnd-gold/20' : 'bg-white/5 text-dnd-text/40'}
                   `}>
                     {p.initiative}
                   </div>
@@ -161,11 +154,11 @@ const PlayerView: React.FC<{
                     <span role="img" aria-label={p.type} className="text-xl sm:text-2xl">
                         {p.type === 'player' ? '🧑' : p.type === 'dmpc' ? '🎭' : '🐲'}
                     </span>
-                    <span className={`text-xl sm:text-2xl font-medieval truncate ${isActive ? 'text-white' : 'text-stone-300'}`}>
+                    <span className={`text-xl sm:text-2xl font-sans font-bold truncate ${isActive ? 'text-white' : 'text-dnd-text/80'}`}>
                       {p.name}
                     </span>
                     {isActive && (
-                      <span className="bg-amber-500 text-stone-950 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter animate-pulse">
+                      <span className="bg-dnd-gold text-black text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest animate-pulse">
                         Turn
                       </span>
                     )}
@@ -174,7 +167,7 @@ const PlayerView: React.FC<{
                   {/* Conditions */}
                   <div className="flex flex-wrap gap-1">
                     {p.conditions.map(c => (
-                      <span key={c.id} className="bg-violet-900/60 text-violet-200 border border-violet-700/50 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+                      <span key={c.id} className="bg-dnd-gold/10 text-dnd-gold border border-dnd-gold/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
                         {c.name} {c.duration !== Infinity && `(${c.duration})`}
                       </span>
                     ))}
@@ -183,11 +176,11 @@ const PlayerView: React.FC<{
 
                 {/* Vitality Column */}
                 <div className="col-span-3 text-right pr-2">
-                   <div className={`text-sm sm:text-lg font-bold uppercase tracking-wide ${vitality.color}`}>
+                   <div className={`text-xs sm:text-sm font-black uppercase tracking-widest ${vitality.color}`}>
                      {vitality.label}
                    </div>
                    {isActive && (
-                      <div className="text-amber-500 animate-[bounce_1s_infinite_horizontal] mt-2 hidden md:block">
+                      <div className="text-dnd-gold animate-[bounce_1s_infinite_horizontal] mt-2 hidden md:block">
                         <svg className="w-6 h-6 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
@@ -797,19 +790,22 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-dnd-dark p-4 sm:p-6 relative overflow-hidden">
+      {/* Atmospheric Glows */}
+      <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-dnd-gold/5 rounded-full blur-[100px]"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-dnd-gold/5 rounded-full blur-[100px]"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
         <header className="text-center mb-8">
-          <h1 className="text-5xl md:text-6xl font-medieval text-amber-500 flex items-center justify-center gap-4">
-            <D20Icon className="w-12 h-12" />
-            Encounter Tracker
-            <D20Icon className="w-12 h-12" />
+          <h1 className="text-5xl md:text-7xl font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-[#e5c983] to-[#8a7238] drop-shadow-2xl uppercase">
+            Encounter
           </h1>
-          <p className="text-stone-400 mt-2">The battle awaits. May the dice be ever in your favor.</p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
             <InitiativeList
               participants={sortedParticipants}
               currentIndex={currentIndex}
@@ -825,7 +821,7 @@ const App: React.FC = () => {
             <CombatLog entries={combatLog} />
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             <CombatControls
               round={round}
               isCombatStarted={currentIndex > -1}

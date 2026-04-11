@@ -25,16 +25,16 @@ export const DescriptionEditorModal: React.FC<DescriptionEditorModalProps> = ({ 
       aria-labelledby="desc-editor-title"
     >
       <div
-        className="bg-stone-800 rounded-lg shadow-xl border border-stone-700 w-full max-w-2xl h-[70vh] flex flex-col"
+        className="bg-dnd-panel rounded-lg shadow-xl border border-white/10 w-full max-w-2xl h-[70vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex justify-between items-center p-4 border-b border-stone-700">
-          <h2 id="desc-editor-title" className="text-xl font-medieval text-white">
+        <header className="flex justify-between items-center p-4 border-b border-white/10">
+          <h2 id="desc-editor-title" className="text-[10px] font-black text-dnd-text/40 uppercase tracking-[0.2em]">
             Custom Description Editor
           </h2>
           <button
             onClick={onClose}
-            className="p-1 text-stone-400 hover:text-white rounded-full hover:bg-stone-700 transition"
+            className="p-1 text-dnd-text/40 hover:text-white rounded-full hover:bg-white/10 transition"
             aria-label="Close modal"
           >
             <CloseIcon className="w-6 h-6" />
@@ -44,21 +44,21 @@ export const DescriptionEditorModal: React.FC<DescriptionEditorModalProps> = ({ 
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full h-full bg-stone-900/50 border border-stone-600 rounded-md p-3 text-white focus:ring-2 focus:ring-amber-500 transition resize-none"
+            className="w-full h-full bg-black/40 border border-white/10 rounded-md p-3 text-white focus:ring-2 focus:ring-dnd-gold/50 transition resize-none font-sans"
             placeholder="Enter a custom description, lore, or notes for this creature..."
             autoFocus
           />
         </div>
-        <footer className="p-4 border-t border-stone-700 flex justify-end gap-4">
+        <footer className="p-4 border-t border-white/10 flex justify-end gap-4">
             <button
                 onClick={onClose}
-                className="bg-stone-700 hover:bg-stone-600 text-white font-bold py-2 px-6 rounded-md transition duration-300"
+                className="bg-white/5 hover:bg-white/10 text-dnd-text/60 font-black uppercase tracking-widest text-[10px] py-2 px-6 rounded-md transition duration-300 border border-white/5"
             >
                 Cancel
             </button>
              <button
                 onClick={handleSave}
-                className="flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-6 rounded-md transition duration-300"
+                className="flex items-center justify-center bg-dnd-gold hover:bg-dnd-gold/80 text-black font-black uppercase tracking-widest text-[10px] py-2 px-6 rounded-md transition duration-300 shadow-lg"
             >
                 <CheckIcon className="w-5 h-5 mr-2" />
                 Save Description

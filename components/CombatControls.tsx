@@ -28,50 +28,50 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
   hasParticipants
 }) => {
   return (
-    <div className="bg-stone-800/50 rounded-lg shadow-lg p-6 border border-stone-700 relative">
+    <div className="bg-dnd-panel/80 backdrop-blur-md rounded-xl shadow-xl p-4 border border-white/5 relative">
       <button
         onClick={onOpenPlayerView}
-        className="absolute top-4 right-4 p-2 text-stone-400 hover:text-amber-500 transition-colors bg-stone-900/40 rounded-md border border-stone-700"
+        className="absolute top-2 right-2 p-1.5 text-dnd-text/40 hover:text-dnd-gold transition-colors bg-black/20 rounded border border-white/5"
         title="Pop-out Player View (Separate Tab)"
       >
-        <ExternalLinkIcon className="w-5 h-5" />
+        <ExternalLinkIcon className="w-4 h-4" />
       </button>
 
       <div className="flex justify-between items-center mb-4 pr-10">
-        <h3 className="text-2xl font-medieval text-white">Combat Controls</h3>
+        <h3 className="text-[10px] font-black text-dnd-text/40 uppercase tracking-[0.2em]">Controls</h3>
         {isCombatStarted && (
           <div className="text-center">
-            <div className="text-sm text-stone-400">Round</div>
-            <div className="text-4xl font-bold text-white">{round}</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-dnd-text/40">Round</div>
+            <div className="text-3xl font-black text-white drop-shadow-sm">{round}</div>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {!isCombatStarted ? (
           <button
             onClick={onStart}
             disabled={!hasParticipants}
-            className="col-span-2 flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+            className="col-span-2 flex items-center justify-center bg-dnd-gold hover:brightness-110 text-black font-black uppercase tracking-widest py-3 px-3 text-[10px] rounded transition-all shadow-lg shadow-dnd-gold/10 disabled:bg-white/5 disabled:text-dnd-text/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
           >
-            <PlayIcon className="w-5 h-5 mr-2" />
+            <PlayIcon className="w-4 h-4 mr-2" />
             Start Combat
           </button>
         ) : (
           <>
             <button
               onClick={onPrev}
-              className="flex items-center justify-center bg-stone-700 hover:bg-stone-600 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out"
+              className="flex items-center justify-center bg-white/5 hover:bg-white/10 text-dnd-text/80 font-black uppercase tracking-widest py-3 px-3 text-[10px] rounded transition-all border border-white/5"
             >
-              <ArrowLeftIcon className="w-5 h-5 mr-2" />
+              <ArrowLeftIcon className="w-4 h-4 mr-2" />
               Prev
             </button>
             <button
               onClick={onNext}
-              className="flex items-center justify-center bg-stone-600 hover:bg-stone-500 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out"
+              className="flex items-center justify-center bg-dnd-gold hover:brightness-110 text-black font-black uppercase tracking-widest py-3 px-3 text-[10px] rounded transition-all shadow-lg shadow-dnd-gold/10"
             >
               Next
-              <ArrowRightIcon className="w-5 h-5 ml-2" />
+              <ArrowRightIcon className="w-4 h-4 ml-2" />
             </button>
           </>
         )}
@@ -79,24 +79,24 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
         <button
           onClick={onEnd}
           disabled={!isCombatStarted}
-          className="col-span-2 sm:col-span-1 flex items-center justify-center bg-red-800 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="col-span-2 sm:col-span-1 flex items-center justify-center bg-dnd-red/20 hover:bg-dnd-red/30 text-dnd-red font-black uppercase tracking-widest py-2.5 px-3 text-[10px] rounded transition-all border border-dnd-red/20 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           End Combat
         </button>
         <button
           onClick={onReset}
           disabled={!hasParticipants}
-          className="col-span-2 sm:col-span-1 flex items-center justify-center bg-stone-700 hover:bg-stone-600 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="col-span-2 sm:col-span-1 flex items-center justify-center bg-white/5 hover:bg-white/10 text-dnd-text/60 font-black uppercase tracking-widest py-2.5 px-3 text-[10px] rounded transition-all border border-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <RefreshIcon className="w-5 h-5 mr-2" />
+          <RefreshIcon className="w-4 h-4 mr-2" />
           Long Rest
         </button>
         <button
           onClick={onClear}
           disabled={!hasParticipants}
-          className="col-span-2 flex items-center justify-center bg-stone-700 hover:bg-stone-600 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="col-span-2 flex items-center justify-center bg-white/5 hover:bg-white/10 text-dnd-text/40 hover:text-dnd-red font-black uppercase tracking-widest py-2.5 px-3 text-[10px] rounded transition-all border border-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <TrashIcon className="w-5 h-5 mr-2" />
+          <TrashIcon className="w-4 h-4 mr-2" />
           Clear battlefield
         </button>
       </div>

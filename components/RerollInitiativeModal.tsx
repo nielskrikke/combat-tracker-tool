@@ -42,32 +42,36 @@ export const RerollInitiativeModal: React.FC<RerollInitiativeModalProps> = ({ lo
 
     return (
         <div 
-            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={onClose}
         >
             <div 
-                className="bg-stone-800 rounded-lg shadow-xl p-6 border border-stone-700 w-full max-w-lg m-4 relative"
+                className="bg-dnd-panel rounded-2xl shadow-2xl p-8 border border-white/10 w-full max-w-lg m-4 relative overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-between items-start mb-4">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-dnd-gold to-transparent opacity-50"></div>
+                <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h3 className="text-2xl font-medieval text-white">Update Initiative</h3>
-                        <p className="text-stone-400 mt-2 text-sm max-w-prose">Session loaded. You can update initiative values below and reset combat, or load the session exactly as it was saved.</p>
+                        <h3 className="text-[10px] font-black text-dnd-text/40 uppercase tracking-[0.2em]">Update Initiative</h3>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-dnd-text/40 mt-2 max-w-xs">Session loaded. Adjust initiative values or restore the previous state.</p>
                     </div>
-                     <button onClick={onClose} className="text-stone-400 text-3xl leading-none hover:text-white absolute top-3 right-4">&times;</button>
+                     <button onClick={onClose} className="p-2 text-dnd-text/40 hover:text-dnd-gold rounded-full hover:bg-white/5 transition-all text-2xl leading-none">&times;</button>
                 </div>
 
-                <div className="space-y-3 max-h-60 overflow-y-auto pr-2 my-6 border-y border-stone-700 py-4">
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-2 my-8 custom-scrollbar">
                     {loadedState.participants.map(p => (
-                        <div key={p.id} className="flex items-center justify-between gap-4 px-2">
-                            <span className="text-white font-medium truncate">{p.name}</span>
-                            <input
-                                type="number"
-                                value={initiatives[p.id] || ''}
-                                onChange={(e) => handleInitiativeChange(p.id, e.target.value)}
-                                className="w-24 bg-stone-900/50 border border-stone-600 rounded-md px-3 py-1 text-white text-center focus:ring-2 focus:ring-amber-500"
-                                required
-                            />
+                        <div key={p.id} className="flex items-center justify-between gap-4 p-4 bg-black/20 rounded-xl border border-white/5 group hover:border-dnd-gold/30 transition-all">
+                            <span className="text-dnd-text font-sans text-lg truncate">{p.name}</span>
+                            <div className="flex flex-col items-end">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-dnd-text/20 mb-1">Initiative</label>
+                                <input
+                                    type="number"
+                                    value={initiatives[p.id] || ''}
+                                    onChange={(e) => handleInitiativeChange(p.id, e.target.value)}
+                                    className="w-20 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-dnd-text text-center font-mono focus:ring-2 focus:ring-dnd-gold/50 transition-all"
+                                    required
+                                />
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -75,18 +79,18 @@ export const RerollInitiativeModal: React.FC<RerollInitiativeModalProps> = ({ lo
                 <div className="flex flex-col sm:flex-row gap-4 justify-end">
                     <button
                         onClick={() => onConfirmLoadAsIs(loadedState)}
-                        className="flex items-center justify-center bg-stone-700 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+                        className="flex-1 sm:flex-none flex items-center justify-center bg-white/5 hover:bg-white/10 text-dnd-text/60 hover:text-dnd-text font-black uppercase tracking-widest text-[10px] py-4 px-8 rounded-xl transition-all border border-white/5"
                     >
-                        <UploadIcon className="w-5 h-5 mr-2" />
-                        Load Session As-Is
+                        <UploadIcon className="w-4 h-4 mr-2" />
+                        Load As-Is
                     </button>
                      <button
                         onClick={handleUpdateAndReset}
                         disabled={!allInitiativesValid}
-                        className="flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 sm:flex-none flex items-center justify-center bg-dnd-gold hover:bg-dnd-gold/80 text-black font-black uppercase tracking-widest text-[10px] py-4 px-8 rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <CheckIcon className="w-5 h-5 mr-2" />
-                        Update Initiatives & Reset
+                        <CheckIcon className="w-4 h-4 mr-2" />
+                        Update & Reset
                     </button>
                 </div>
             </div>

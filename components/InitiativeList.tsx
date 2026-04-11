@@ -117,28 +117,28 @@ export const InitiativeList: React.FC<InitiativeListProps> = ({
   }, [participants]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center bg-stone-800/80 p-3 rounded-lg border border-stone-700">
-        <h2 className="text-2xl font-medieval text-white">Initiative Order</h2>
+    <div className="space-y-3">
+      <div className="flex justify-between items-center bg-dnd-panel/80 backdrop-blur-md p-3 rounded-xl border border-white/5 shadow-xl">
+        <h2 className="text-[10px] font-black text-dnd-text/40 uppercase tracking-[0.2em]">Initiative Order</h2>
         <div className="flex gap-2">
             {isSelectionMode ? (
                 <>
-                   <span className="text-sm text-stone-400 flex items-center mr-2">
+                   <span className="text-[10px] font-black uppercase tracking-widest text-dnd-text/40 flex items-center mr-2">
                      {selectedIds.size} Selected
                    </span>
                    {selectedIds.size > 1 && (
                       <button 
                         onClick={handleGroup}
-                        className="px-3 py-1 bg-amber-700 hover:bg-amber-600 text-white text-sm rounded-md transition flex items-center gap-1"
+                        className="px-3 py-1.5 bg-dnd-gold text-black text-[10px] font-black uppercase tracking-widest rounded transition-all hover:brightness-110 shadow-lg shadow-dnd-gold/10"
                         title="Group Selected"
                       >
-                         <UsersIcon className="w-4 h-4" /> Group
+                         <UsersIcon className="w-3 h-3 mr-1 inline" /> Group
                       </button>
                    )}
                    {selectedIds.size > 0 && hasGroupedItems && (
                        <button
                          onClick={handleUngroup}
-                         className="px-3 py-1 bg-stone-600 hover:bg-stone-500 text-white text-sm rounded-md transition"
+                         className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-dnd-text text-[10px] font-black uppercase tracking-widest rounded transition-all border border-white/5"
                          title="Ungroup Selected"
                        >
                          Ungroup
@@ -146,7 +146,7 @@ export const InitiativeList: React.FC<InitiativeListProps> = ({
                    )}
                    <button 
                      onClick={clearSelection}
-                     className="px-3 py-1 bg-stone-700 hover:bg-stone-600 text-white text-sm rounded-md transition"
+                     className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-dnd-text/60 text-[10px] font-black uppercase tracking-widest rounded transition-all border border-white/5"
                    >
                      Cancel
                    </button>
@@ -154,33 +154,32 @@ export const InitiativeList: React.FC<InitiativeListProps> = ({
             ) : (
                 <button 
                   onClick={() => setIsSelectionMode(true)}
-                  className="px-3 py-1 bg-stone-700 hover:bg-stone-600 text-stone-300 hover:text-white text-sm rounded-md transition flex items-center gap-2"
+                  className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-dnd-text/60 hover:text-dnd-gold text-[10px] font-black uppercase tracking-widest rounded transition-all border border-white/5 flex items-center gap-2"
                   disabled={participants.length === 0}
                 >
-                   <CheckIcon className="w-4 h-4" /> Select
+                   <CheckIcon className="w-3 h-3" /> Select
                 </button>
             )}
         </div>
       </div>
       
       {participants.length === 0 ? (
-        <div className="text-center py-12 bg-stone-800/30 rounded-lg border-2 border-dashed border-stone-700 text-stone-500">
-          <p className="text-lg">The battlefield is empty.</p>
-          <p>Add combatants to begin.</p>
+        <div className="text-center py-12 bg-dnd-panel/40 rounded-xl border border-dashed border-white/5 text-dnd-text/20">
+          <p className="text-xl font-sans italic">The battlefield is empty.</p>
+          <p className="text-[10px] font-sans uppercase tracking-widest mt-2">Add combatants to begin.</p>
         </div>
       ) : (
         <ul className="space-y-3">
           {groupedItems.map((item, groupIndex) => {
             // Render Group Container
-            // Check for 'members' property to distinguish GroupWrapper from Participant
             if ('members' in item) { 
                 const isEditing = editingGroupId === item.group.id;
                 const initiative = item.members[0]?.initiative || 0;
                 
                 return (
-                    <li key={`group-${item.group.id}-${groupIndex}`} className={`relative flex border-l-4 rounded-lg bg-stone-800/50 overflow-hidden ${item.group.color}`}>
+                    <li key={`group-${item.group.id}-${groupIndex}`} className={`relative flex border-l-4 rounded-xl bg-dnd-panel/60 backdrop-blur-md border border-white/5 overflow-hidden shadow-xl ${item.group.color}`}>
                          {/* Group Initiative Column */}
-                         <div className="w-16 bg-stone-900/40 flex flex-col items-center justify-center border-r border-stone-700 p-2 shrink-0">
+                         <div className="w-20 bg-black/20 flex flex-col items-center justify-center border-r border-white/5 p-2 shrink-0">
                              {isEditing ? (
                                  <input
                                     type="number"
@@ -188,7 +187,7 @@ export const InitiativeList: React.FC<InitiativeListProps> = ({
                                     onChange={e => setNewGroupInitiative(e.target.value)}
                                     onKeyDown={e => handleGroupInitKeyDown(e, item.group.id)}
                                     onBlur={() => handleGroupInitiativeUpdate(item.group.id, parseInt(newGroupInitiative, 10))}
-                                    className="w-12 text-center bg-stone-800 border border-stone-600 rounded text-white"
+                                    className="w-14 text-center bg-dnd-dark border border-dnd-gold/30 rounded text-dnd-gold font-black text-xl p-1"
                                     autoFocus
                                  />
                              ) : (
@@ -200,8 +199,8 @@ export const InitiativeList: React.FC<InitiativeListProps> = ({
                                     }}
                                     title="Edit Group Initiative"
                                 >
-                                    <span className="text-2xl font-bold text-white">{initiative}</span>
-                                    <EditIcon className="w-4 h-4 text-stone-500 opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
+                                    <span className="text-3xl font-black text-dnd-gold drop-shadow-sm">{initiative}</span>
+                                    <EditIcon className="w-4 h-4 text-dnd-gold/40 opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
                                 </div>
                              )}
                          </div>
@@ -209,7 +208,6 @@ export const InitiativeList: React.FC<InitiativeListProps> = ({
                          {/* Group Members List */}
                          <div className="flex-grow flex flex-col">
                              {item.members.map((participant) => {
-                                 // We need to find the actual index in the original array for 'currentIndex' prop
                                  const originalIndex = participants.findIndex(p => p.id === participant.id);
                                  return (
                                      <ParticipantItem

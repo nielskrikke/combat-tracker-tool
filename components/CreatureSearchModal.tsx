@@ -46,15 +46,15 @@ const MultiSelectDropdown: React.FC<{ options: string[], selected: string[], onC
     
     return (
         <div className="relative" ref={ref}>
-            <button type="button" onClick={() => setIsOpen(prev => !prev)} className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white text-left truncate">
+            <button type="button" onClick={() => setIsOpen(prev => !prev)} className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-dnd-text text-left truncate font-sans text-xs focus:ring-2 focus:ring-dnd-gold/50 transition-all">
                 {selected.length === 0 ? placeholder : `${selected.length} selected: ${selected.slice(0, 2).join(', ')}${selected.length > 2 ? '...' : ''}`}
             </button>
             {isOpen && (
-                <div className="absolute z-10 w-full mt-1 bg-stone-600 border border-stone-500 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-20 w-full mt-2 bg-dnd-panel border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto custom-scrollbar p-2">
                     {options.map(option => (
-                        <label key={option} className="flex items-center px-4 py-2 text-white hover:bg-amber-700 cursor-pointer capitalize">
-                            <input type="checkbox" checked={selected.includes(option)} onChange={() => onChange(option)} className="h-4 w-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500" />
-                            <span className="ml-3">{option}</span>
+                        <label key={option} className="flex items-center px-4 py-3 text-dnd-text hover:bg-white/5 rounded-lg cursor-pointer transition-colors group">
+                            <input type="checkbox" checked={selected.includes(option)} onChange={() => onChange(option)} className="h-5 w-5 rounded border-white/10 bg-black/40 text-dnd-gold focus:ring-dnd-gold/50 cursor-pointer" />
+                            <span className="ml-4 font-sans group-hover:text-dnd-gold transition-colors capitalize">{option}</span>
                         </label>
                     ))}
                 </div>
@@ -116,86 +116,90 @@ export const CreatureSearchModal: React.FC<CreatureSearchModalProps> = ({ onClos
     };
 
     return (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="bg-stone-800 rounded-lg shadow-xl border border-stone-700 w-full max-w-4xl h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                <header className="flex justify-between items-center p-4 border-b border-stone-700">
-                    <h2 className="text-2xl font-medieval text-white">Creature Compendium</h2>
-                    <button onClick={onClose} className="p-1 text-stone-400 hover:text-white rounded-full hover:bg-stone-700 transition" aria-label="Close modal">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div className="bg-dnd-panel rounded-2xl shadow-2xl border border-white/10 w-full max-w-5xl h-[90vh] flex flex-col relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-dnd-gold to-transparent opacity-50"></div>
+                <header className="flex justify-between items-center px-8 py-6 border-b border-white/5">
+                    <h2 className="text-[10px] font-black text-dnd-text/40 uppercase tracking-[0.2em]">Creature Compendium</h2>
+                    <button onClick={onClose} className="p-2 text-dnd-text/40 hover:text-dnd-gold rounded-full hover:bg-white/5 transition-all" aria-label="Close modal">
                         <CloseIcon className="w-6 h-6" />
                     </button>
                 </header>
                 
                 <div className="flex-grow flex overflow-hidden">
                     {/* Filters Pane */}
-                    <aside className="w-1/3 xl:w-1/4 p-4 border-r border-stone-700 overflow-y-auto space-y-4">
-                        <h3 className="text-lg font-bold text-stone-200">Filters</h3>
-                        <div>
-                            <label className="block text-sm font-medium text-stone-400 mb-1">Challenge Rating</label>
-                            <div className="flex items-center gap-2">
-                                <select value={filters.minCr} onChange={e => handleFilterChange('minCr', e.target.value)} className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-2 py-2 text-white">
-                                    {CR_VALUES.map(cr => <option key={`min-${cr}`} value={cr}>{cr}</option>)}
-                                </select>
-                                <span className="text-stone-400">to</span>
-                                 <select value={filters.maxCr} onChange={e => handleFilterChange('maxCr', e.target.value)} className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-2 py-2 text-white">
-                                    {CR_VALUES.map(cr => <option key={`max-${cr}`} value={cr}>{cr}</option>)}
-                                </select>
+                    <aside className="w-1/3 xl:w-1/4 p-8 border-r border-white/5 overflow-y-auto space-y-8 custom-scrollbar">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-dnd-text/40 ml-1">Filters</h3>
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-dnd-text/40 mb-2 ml-1">Challenge Rating</label>
+                                <div className="flex items-center gap-3">
+                                    <select value={filters.minCr} onChange={e => handleFilterChange('minCr', e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-xl px-2 py-2 text-dnd-text font-mono text-center text-xs focus:ring-2 focus:ring-dnd-gold/50 transition-all">
+                                        {CR_VALUES.map(cr => <option key={`min-${cr}`} value={cr} className="bg-dnd-panel">{cr}</option>)}
+                                    </select>
+                                    <span className="text-dnd-text/20 font-black uppercase tracking-widest text-[10px]">to</span>
+                                     <select value={filters.maxCr} onChange={e => handleFilterChange('maxCr', e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-xl px-2 py-2 text-dnd-text font-mono text-center text-xs focus:ring-2 focus:ring-dnd-gold/50 transition-all">
+                                        {CR_VALUES.map(cr => <option key={`max-${cr}`} value={cr} className="bg-dnd-panel">{cr}</option>)}
+                                    </select>
+                                </div>
                             </div>
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-dnd-text/40 mb-2 ml-1">Type</label>
+                                <MultiSelectDropdown options={CREATURE_TYPES} selected={filters.types} onChange={(v) => handleMultiSelectChange('types', v)} placeholder="Any Type" />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-dnd-text/40 mb-2 ml-1">Size</label>
+                                <MultiSelectDropdown options={SIZES} selected={filters.sizes} onChange={(v) => handleMultiSelectChange('sizes', v)} placeholder="Any Size" />
+                            </div>
+                             <div>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-dnd-text/40 mb-2 ml-1">Alignment</label>
+                                <MultiSelectDropdown options={ALIGNMENTS} selected={filters.alignments} onChange={(v) => handleMultiSelectChange('alignments', v)} placeholder="Any Alignment" />
+                            </div>
+                            <label className="flex items-center cursor-pointer group">
+                                <input type="checkbox" checked={filters.isLegendary} onChange={e => handleFilterChange('isLegendary', e.target.checked)} className="h-6 w-6 rounded border-white/10 bg-black/40 text-dnd-gold focus:ring-dnd-gold/50 cursor-pointer"/>
+                                <span className="ml-3 text-[10px] font-sans text-dnd-text/60 group-hover:text-dnd-gold transition-colors">Is Legendary</span>
+                            </label>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-stone-400 mb-1">Type</label>
-                            <MultiSelectDropdown options={CREATURE_TYPES} selected={filters.types} onChange={(v) => handleMultiSelectChange('types', v)} placeholder="Any Type" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-stone-400 mb-1">Size</label>
-                            <MultiSelectDropdown options={SIZES} selected={filters.sizes} onChange={(v) => handleMultiSelectChange('sizes', v)} placeholder="Any Size" />
-                        </div>
-                         <div>
-                            <label className="block text-sm font-medium text-stone-400 mb-1">Alignment</label>
-                            <MultiSelectDropdown options={ALIGNMENTS} selected={filters.alignments} onChange={(v) => handleMultiSelectChange('alignments', v)} placeholder="Any Alignment" />
-                        </div>
-                        <label className="flex items-center text-white select-none">
-                            <input type="checkbox" checked={filters.isLegendary} onChange={e => handleFilterChange('isLegendary', e.target.checked)} className="h-4 w-4 rounded border-stone-300 text-amber-600 focus:ring-amber-500"/>
-                            <span className="ml-2">Is Legendary</span>
-                        </label>
 
-                        <div className="pt-2 flex flex-col gap-2">
-                            <button onClick={applyFilters} className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-md transition">Apply Filters</button>
-                            <button onClick={resetFilters} className="w-full bg-stone-700 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded-md transition flex items-center justify-center gap-2"><RefreshIcon className="w-4 h-4"/>Reset</button>
+                        <div className="pt-4 flex flex-col gap-3">
+                            <button onClick={applyFilters} className="w-full bg-dnd-gold hover:bg-dnd-gold/80 text-black font-black uppercase tracking-[0.2em] text-[10px] py-4 rounded-xl transition-all shadow-lg">Apply Filters</button>
+                            <button onClick={resetFilters} className="w-full bg-white/5 hover:bg-white/10 text-dnd-text/60 hover:text-dnd-text font-black uppercase tracking-[0.2em] text-[10px] py-4 rounded-xl transition-all border border-white/5 flex items-center justify-center gap-2"><RefreshIcon className="w-4 h-4"/>Reset</button>
                         </div>
                     </aside>
 
                     {/* Results Pane */}
-                    <main className="flex-grow p-4 overflow-y-auto">
+                    <main className="flex-grow p-8 overflow-y-auto custom-scrollbar bg-black/20">
                         {isLoading ? (
-                            <div className="flex flex-col items-center justify-center h-full text-center text-stone-400">
-                                <svg className="animate-spin h-10 w-10 text-white mb-4" viewBox="0 0 24 24">
+                            <div className="flex flex-col items-center justify-center h-full text-center">
+                                <svg className="animate-spin h-12 w-12 text-dnd-gold mb-6" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                <p className="text-lg">Summoning the bestiary...</p>
-                                <p className="text-sm mt-2">{loadingProgress || "This may take a minute on the first load."}</p>
+                                <p className="text-2xl font-sans font-black text-dnd-gold tracking-tight">Summoning the bestiary...</p>
+                                <p className="text-xs font-black uppercase tracking-widest text-dnd-text/40 mt-4">{loadingProgress || "This may take a minute on the first load."}</p>
                             </div>
                         ) : (
                             <>
-                                <p className="text-stone-400 text-sm mb-2">{filteredMonsters.length} of {allMonsters.length} creatures shown</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dnd-text/30 mb-6 ml-1">{filteredMonsters.length} of {allMonsters.length} creatures shown</p>
                                 {filteredMonsters.length > 0 ? (
-                                <ul className="space-y-2">
+                                <ul className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                     {filteredMonsters.map(m => (
                                         <li key={m.index}>
-                                            <button onClick={() => onSelect(m.url)} className="w-full text-left p-3 bg-stone-900/50 hover:bg-stone-700/80 rounded-md transition group">
-                                                <div className="flex justify-between items-center">
-                                                    <p className="font-bold text-white group-hover:text-amber-400 transition">{m.name}</p>
-                                                    <p className="text-sm text-stone-300">CR {crToString(m.challenge_rating)}</p>
+                                            <button onClick={() => onSelect(m.url)} className="w-full text-left p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5 group relative overflow-hidden">
+                                                <div className="absolute top-0 left-0 w-1 h-full bg-dnd-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <p className="font-sans text-sm font-black text-dnd-text group-hover:text-dnd-gold transition-colors leading-tight">{m.name}</p>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-dnd-text/40 bg-black/40 px-2 py-1 rounded border border-white/5">CR {crToString(m.challenge_rating)}</p>
                                                 </div>
-                                                <p className="text-xs text-stone-400 capitalize">{m.size} {m.type}</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-dnd-text/40 capitalize">{m.size} {m.type}</p>
                                             </button>
                                         </li>
                                     ))}
                                 </ul>
                                 ) : (
-                                    <div className="text-center py-10 text-stone-500">
-                                        <p className="text-lg">No creatures match your criteria.</p>
-                                        <p className="mt-2">Try adjusting your filters.</p>
+                                    <div className="flex flex-col items-center justify-center h-full text-center opacity-40 py-20">
+                                        <p className="text-2xl font-sans italic text-dnd-text">No creatures match your criteria.</p>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-dnd-text/60 mt-4">Try adjusting your filters.</p>
                                     </div>
                                 )}
                             </>

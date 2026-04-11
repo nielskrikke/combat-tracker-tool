@@ -20,22 +20,22 @@ export const DescriptionViewerModal: React.FC<DescriptionViewerModalProps> = ({ 
       aria-labelledby="desc-viewer-title"
     >
       <div
-        className="bg-stone-800 rounded-lg shadow-xl border border-stone-700 w-full max-w-2xl max-h-[80vh] flex flex-col"
+        className="bg-dnd-panel rounded-lg shadow-xl border border-white/10 w-full max-w-2xl max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="flex justify-between items-center p-4 border-b border-stone-700">
-          <h2 id="desc-viewer-title" className="text-xl font-medieval text-white">
+        <header className="flex justify-between items-center p-4 border-b border-white/10">
+          <h2 id="desc-viewer-title" className="text-[10px] font-black text-dnd-text/40 uppercase tracking-[0.2em]">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 text-stone-400 hover:text-white rounded-full hover:bg-stone-700 transition"
+            className="p-1 text-dnd-text/40 hover:text-white rounded-full hover:bg-white/10 transition"
             aria-label="Close modal"
           >
             <CloseIcon className="w-6 h-6" />
           </button>
         </header>
-        <div className="flex-grow p-6 overflow-y-auto prose prose-invert prose-p:text-stone-300 prose-headings:text-amber-400 prose-strong:text-white prose-ul:list-disc prose-li:text-stone-300 prose-a:text-sky-400">
+        <div className="flex-grow p-6 overflow-y-auto prose prose-invert prose-p:text-dnd-text/80 prose-headings:text-dnd-gold prose-strong:text-white prose-ul:list-disc prose-li:text-dnd-text/80 prose-a:text-sky-400 font-sans">
           <MarkdownRenderer markdown={description} />
         </div>
       </div>

@@ -27,9 +27,9 @@ const ActionInput: React.FC<{
     };
     
     return (
-        <div className="bg-stone-700/50 p-4 rounded-lg">
-            <label className="flex items-center gap-2 text-lg font-bold text-stone-200 mb-2">
-                <Icon className={`w-6 h-6 ${iconColorClass}`} />
+        <div className="bg-black/20 p-4 rounded-xl border border-white/5">
+            <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dnd-text/40 mb-3 ml-1">
+                <Icon className={`w-4 h-4 ${iconColorClass}`} />
                 {label}
             </label>
             <div className="flex gap-2">
@@ -38,13 +38,13 @@ const ActionInput: React.FC<{
                     value={value}
                     onChange={onChange}
                     onKeyDown={handleKeyDown}
-                    className="w-full bg-stone-900/50 border border-stone-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-amber-500 transition"
+                    className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-dnd-text focus:ring-2 focus:ring-dnd-gold/50 transition-all font-mono text-center"
                     placeholder={placeholder || 'Amount'}
                     autoFocus={label === "Damage"} // Autofocus damage input
                 />
                 <button
                     onClick={onConfirm}
-                    className={`px-4 py-2 text-white font-semibold rounded-md transition duration-300 ease-in-out disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${buttonColorClass}`}
+                    className={`px-6 py-2 text-black font-black uppercase tracking-widest text-[10px] rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${buttonColorClass}`}
                     disabled={!value}
                 >
                     {buttonText}
@@ -123,40 +123,44 @@ export const HealthManagerModal: React.FC<HealthManagerModalProps> = ({ particip
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
-        className="bg-stone-800 rounded-lg shadow-xl p-6 border border-stone-700 w-full max-w-md m-4"
+        className="bg-dnd-panel rounded-2xl shadow-2xl p-8 border border-white/10 w-full max-w-md m-4 relative overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-2xl font-medieval text-white">
-            Health Manager: {participant.name}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-dnd-gold to-transparent opacity-50"></div>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-[10px] font-black text-dnd-text/40 uppercase tracking-[0.2em]">
+            Vitality
           </h3>
-          <button onClick={onClose} className="text-stone-400 hover:text-white">
+          <button onClick={onClose} className="p-2 text-dnd-text/40 hover:text-dnd-gold rounded-full hover:bg-white/5 transition-all">
             <CloseIcon className="w-6 h-6"/>
           </button>
         </div>
         
-        <div className="text-center bg-stone-900/50 p-3 rounded-lg mb-4 border border-stone-700">
-            <span className="text-2xl font-bold text-white">
+        <p className="text-[10px] font-black uppercase tracking-widest text-dnd-text/40 mb-4 ml-1">Managing {participant.name}</p>
+
+        <div className="text-center bg-black/20 p-6 rounded-2xl mb-8 border border-white/5 shadow-inner">
+            <span className="text-3xl font-sans font-black text-dnd-text tracking-tight">
                 {participant.hp}
                 {(participant.tempHp ?? 0) > 0 && <span className="text-sky-400"> +{participant.tempHp}</span>}
-                / {participant.maxHp} HP
+                <span className="text-dnd-text/20 mx-2">/</span>
+                {participant.maxHp} <span className="text-sm font-black uppercase tracking-widest text-dnd-text/40 ml-1">HP</span>
             </span>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
             <ActionInput 
                 Icon={HeartMinusIcon}
                 label="Damage"
                 value={damage}
                 onChange={(e) => setDamage(e.target.value)}
                 onConfirm={handleDamage}
-                buttonText="Apply"
-                iconColorClass="text-red-400"
-                buttonColorClass="bg-red-700 hover:bg-red-600"
+                buttonText="Strike"
+                iconColorClass="text-dnd-red"
+                buttonColorClass="bg-dnd-red hover:bg-dnd-red/80 text-white"
             />
             <ActionInput 
                 Icon={HeartPlusIcon}
@@ -164,29 +168,29 @@ export const HealthManagerModal: React.FC<HealthManagerModalProps> = ({ particip
                 value={heal}
                 onChange={(e) => setHeal(e.target.value)}
                 onConfirm={handleHeal}
-                buttonText="Apply"
+                buttonText="Mend"
                 iconColorClass="text-emerald-400"
-                buttonColorClass="bg-emerald-700 hover:bg-emerald-600"
+                buttonColorClass="bg-emerald-500 hover:bg-emerald-400 text-black"
             />
              <ActionInput 
                 Icon={TempHpIcon}
-                label="Set Temporary HP"
+                label="Temporary HP"
                 value={tempHp}
                 onChange={(e) => setTempHp(e.target.value)}
                 onConfirm={handleSetTempHp}
-                buttonText="Set"
+                buttonText="Fortify"
                 iconColorClass="text-sky-400"
-                buttonColorClass="bg-sky-700 hover:bg-sky-600"
+                buttonColorClass="bg-sky-500 hover:bg-sky-400 text-black"
             />
              <ActionInput 
                 Icon={MaxHpIcon}
-                label="Set Max HP"
+                label="Max HP"
                 value={maxHp}
                 onChange={(e) => setMaxHp(e.target.value)}
                 onConfirm={handleSetMaxHp}
-                buttonText="Set"
-                iconColorClass="text-amber-400"
-                buttonColorClass="bg-amber-700 hover:bg-amber-600"
+                buttonText="Alter"
+                iconColorClass="text-dnd-gold"
+                buttonColorClass="bg-dnd-gold hover:bg-dnd-gold/80 text-black"
             />
         </div>
       </div>

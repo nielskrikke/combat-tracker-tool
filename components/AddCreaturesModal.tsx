@@ -37,32 +37,36 @@ export const AddCreaturesModal: React.FC<AddCreaturesModalProps> = ({ creatures,
 
     return (
         <div 
-            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={onClose}
         >
             <div 
-                className="bg-stone-800 rounded-lg shadow-xl p-6 border border-stone-700 w-full max-w-lg m-4 relative"
+                className="bg-dnd-panel rounded-2xl shadow-2xl p-8 border border-white/10 w-full max-w-lg m-4 relative overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-between items-start mb-4">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-dnd-gold to-transparent opacity-50"></div>
+                <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h3 className="text-2xl font-medieval text-white">Add Creatures to Combat</h3>
-                        <p className="text-stone-400 mt-2 text-sm max-w-prose">Set the initiative for the creatures being added from the file.</p>
+                        <h3 className="text-[10px] font-black text-dnd-text/40 uppercase tracking-[0.2em]">Reinforcements</h3>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-dnd-text/40 mt-2">Set initiative for incoming combatants.</p>
                     </div>
-                     <button onClick={onClose} className="text-stone-400 text-3xl leading-none hover:text-white absolute top-3 right-4">&times;</button>
+                     <button onClick={onClose} className="p-2 text-dnd-text/40 hover:text-dnd-gold rounded-full hover:bg-white/5 transition-all text-2xl leading-none">&times;</button>
                 </div>
 
-                <div className="space-y-3 max-h-60 overflow-y-auto pr-2 my-6 border-y border-stone-700 py-4">
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-2 my-8 custom-scrollbar">
                     {creatures.map(p => (
-                        <div key={p.id} className="flex items-center justify-between gap-4 px-2">
-                            <span className="text-white font-medium truncate">{p.name}</span>
-                            <input
-                                type="number"
-                                value={initiatives[p.id] || ''}
-                                onChange={(e) => handleInitiativeChange(p.id, e.target.value)}
-                                className="w-24 bg-stone-900/50 border border-stone-600 rounded-md px-3 py-1 text-white text-center focus:ring-2 focus:ring-amber-500"
-                                required
-                            />
+                        <div key={p.id} className="flex items-center justify-between gap-4 p-4 bg-black/20 rounded-xl border border-white/5 group hover:border-dnd-gold/30 transition-all">
+                            <span className="text-dnd-text font-sans text-lg truncate">{p.name}</span>
+                            <div className="flex flex-col items-end">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-dnd-text/20 mb-1">Initiative</label>
+                                <input
+                                    type="number"
+                                    value={initiatives[p.id] || ''}
+                                    onChange={(e) => handleInitiativeChange(p.id, e.target.value)}
+                                    className="w-20 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-dnd-text text-center font-mono focus:ring-2 focus:ring-dnd-gold/50 transition-all"
+                                    required
+                                />
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -70,17 +74,17 @@ export const AddCreaturesModal: React.FC<AddCreaturesModalProps> = ({ creatures,
                 <div className="flex flex-col sm:flex-row gap-4 justify-end">
                     <button
                         onClick={onClose}
-                        className="flex items-center justify-center bg-stone-700 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+                        className="flex-1 sm:flex-none items-center justify-center bg-white/5 hover:bg-white/10 text-dnd-text/60 hover:text-dnd-text font-black uppercase tracking-widest text-[10px] py-4 px-8 rounded-xl transition-all border border-white/5"
                     >
                         Cancel
                     </button>
                      <button
                         onClick={handleConfirm}
                         disabled={!allInitiativesValid}
-                        className="flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-md transition duration-300 disabled:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 sm:flex-none flex items-center justify-center bg-dnd-gold hover:bg-dnd-gold/80 text-black font-black uppercase tracking-widest text-[10px] py-4 px-8 rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <CheckIcon className="w-5 h-5 mr-2" />
-                        Add Creatures
+                        <CheckIcon className="w-4 h-4 mr-2" />
+                        Add to Combat
                     </button>
                 </div>
             </div>

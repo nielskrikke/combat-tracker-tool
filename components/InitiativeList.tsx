@@ -165,7 +165,7 @@ export const InitiativeList: React.FC<InitiativeListProps> = ({
       
       {participants.length === 0 ? (
         <div className="text-center py-12 bg-dnd-panel/40 rounded-xl border border-dashed border-white/5 text-dnd-text/20">
-          <p className="text-xl font-sans italic">The battlefield is empty.</p>
+          <p className="text-xl font-sans">The battlefield is empty</p>
           <p className="text-[10px] font-sans uppercase tracking-widest mt-2">Add combatants to begin.</p>
         </div>
       ) : (

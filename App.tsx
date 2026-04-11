@@ -101,7 +101,7 @@ const PlayerView: React.FC<{
 
       <div className="max-w-5xl mx-auto relative z-10">
         <header className="flex flex-col items-center mb-8 border-b border-white/5 pb-6">
-          <h1 className="text-2xl md:text-4xl font-sans font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-[#e5c983] to-[#8a7238] drop-shadow-2xl uppercase mb-2">
+          <h1 className="text-2xl md:text-4xl font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-[#e5c983] to-[#8a7238] drop-shadow-2xl uppercase mb-2">
             Initiative Order
           </h1>
           {round > 0 ? (

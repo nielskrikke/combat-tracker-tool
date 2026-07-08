@@ -1,0 +1,12 @@
+services:
+  niels-encounter-app:
+    build: .
+    container_name: niels-encounter-app
+    networks:
+      nielsnet:
+        ipv4_address: 172.23.0.20
+
+networks:
+  nielsnet:
+    external: true
+    name: nielsnet
